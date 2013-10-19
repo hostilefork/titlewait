@@ -1,0 +1,39 @@
+<html>
+	<head>
+		<title>My Complicated Page</title>
+		<script type="text/javascript">
+			var htmlMessages = [
+				'Building a complex page...',
+				'One step at a time, using script code...',
+				'Something bad might happen!',
+				'In <img src="ie10_48x48.png"> but not <img src="firefox_48x48.png">...',
+				'Or in <img src="opera_48x48.png"> but not in <img src="safari_48x48.png">...',
+				'This time you were lucky! <b>It worked!</b>'
+			];
+
+			var messageIndex = 0;
+
+			var PageConstructionFinished = function() {
+				// this is where the user
+				// can start poking
+				// at the controls
+			};
+
+			var NextMessage = function() {
+				document.getElementById("message").innerHTML = htmlMessages[messageIndex];
+				messageIndex++;
+				if (messageIndex < htmlMessages.length) {
+					setTimeout(NextMessage, 3000);
+				} else {
+					PageConstructionFinished();
+				}
+
+			}
+		</script>
+	</head>
+	<body onload="NextMessage();">
+		<div id="message">
+			<p>Initial HTML Text</p>
+		</div>
+	</body>
+</html>
