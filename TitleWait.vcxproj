@@ -55,7 +55,6 @@
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="src\CaptureEx.h" />
     <ClInclude Include="src\DebugLoop.h" />
     <ClInclude Include="src\HelperFunctions.h" />
     <ClInclude Include="src\NTProcessInfo.h" />
@@ -65,11 +64,11 @@
     <ClInclude Include="src\TitleWaitConfig.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\CaptureEx.cpp" />
     <ClCompile Include="src\DebugLoop.cpp" />
     <ClCompile Include="src\HelperFunctions.cpp" />
     <ClCompile Include="src\NTProcessInfo.cpp" />
     <ClCompile Include="src\ProcessMonitor.cpp" />
+    <ClCompile Include="src\Screenshot.cpp" />
     <ClCompile Include="src\TitleMonitor.cpp" />
     <ClCompile Include="src\TitleWait.cpp" />
     <ClCompile Include="src\TitleWaitConfig.cpp" />

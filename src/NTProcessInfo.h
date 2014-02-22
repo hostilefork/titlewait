@@ -10,6 +10,21 @@
 // No claim of suitability, guarantee, or any warranty whatsoever is
 // provided. The software is provided "as-is".
 
+//***********************************************************************/
+// Header definitions to access NtQueryInformationProcess in NTDLL.DLL
+//
+// Copyright © 2007 Steven Moore (OrionScorpion).  All Rights Reserved.
+//
+// NOTES: PEB_LDR_DATA, RTL_USER_PROCESS_PARAMETERS and PEB struct are
+//        defined in Winternl.h and Ntddk.h.  The specs below are from
+//        Microsoft MSDN web site as of Jul 2007.  I locally specified
+//        them below since they can change in future versions and may
+//        not reflect current winternl.h or ntddk.h
+//***********************************************************************/
+
+#ifndef _ORIONSCORPION_NTPROCESSINFO_H_
+#define _ORIONSCORPION_NTPROCESSINFO_H_
+
 typedef enum _PROCESSINFOCLASS {
     ProcessBasicInformation,
     ProcessQuotaLimits,
@@ -40,20 +55,6 @@ typedef enum _PROCESSINFOCLASS {
     ProcessWow64Information,
     MaxProcessInfoClass
     } PROCESSINFOCLASS;
-
-//***********************************************************************/
-// Header definitions to access NtQueryInformationProcess in NTDLL.DLL
-//
-// Copyright © 2007 Steven Moore (OrionScorpion).  All Rights Reserved.
-//
-// NOTES: PEB_LDR_DATA, RTL_USER_PROCESS_PARAMETERS and PEB struct are
-//        defined in Winternl.h and Ntddk.h.  The specs below are from
-//        Microsoft MSDN web site as of Jul 2007.  I locally specified
-//        them below since they can change in future versions and may
-//        not reflect current winternl.h or ntddk.h
-//***********************************************************************/
-#ifndef _ORIONSCORPION_NTPROCESSINFO_H_
-#define _ORIONSCORPION_NTPROCESSINFO_H_
 
 #pragma once
 

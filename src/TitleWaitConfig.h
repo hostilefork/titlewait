@@ -32,6 +32,9 @@
 // along with TitleWait.  If not, see <http://www.gnu.org/licenses/>.
 //
 
+#ifndef __TITLEWAIT_TITLEWAITCONFIG_H__
+#define __TITLEWAIT_TITLEWAITCONFIG_H__
+
 #include <vector>
 #include <string>
 #include "windows.h"
@@ -129,3 +132,5 @@ public:
 
 extern TitleWaitConfig const & config;
 extern TitleWaitConfig configWritable;
+
+#endif

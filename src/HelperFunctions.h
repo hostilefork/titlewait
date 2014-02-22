@@ -19,6 +19,9 @@
 // along with TitleWait.  If not, see <http://www.gnu.org/licenses/>.
 //
 
+#ifndef __TITLEWAIT_HELPERFUNCTIONS_H__
+#define __TITLEWAIT_HELPERFUNCTIONS_H__
+
 #include <string>
 #include <cstdarg>
 #include "windows.h"
@@ -60,3 +63,5 @@ BOOL base64_encode(
 BOOL base64_decode(
 	const UCHAR* input, DWORD input_length, UCHAR* output, DWORD* output_length
 );
+
+#endif

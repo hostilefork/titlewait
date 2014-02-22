@@ -32,7 +32,7 @@
 #include "DebugLoop.h"
 #include "TitleMonitor.h"
 #include "ProcessMonitor.h"
-#include "CaptureEx.h"
+#include "Screenshot.h"
 
 // No TCHAR legacy, assume WCHAR everywhere...
 // http://stackoverflow.com/a/3002494

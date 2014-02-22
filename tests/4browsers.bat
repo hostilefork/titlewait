@@ -17,6 +17,9 @@ SET titlewait=..\Debug\TitleWait.exe
 DEL snapshots\*.bmp
 
 
+:: Do you want it to be verbose?  yes or no... (or on or off...)
+SET verbosity="on"
+
 :: FIREFOX ::
 
 %titlewait% ^
@@ -27,7 +30,7 @@ DEL snapshots\*.bmp
 	--height=300 ^
 	--x=200 ^
 	--y=200 ^
-	--verbose=on ^
+	--verbose=%verbosity% ^
 	--close=true ^
 	--titlesnapshot="snapshots\firefox-success.bmp" ^
 	--crashsnapshot="snapshots\firefox-crash.bmp" ^
@@ -45,7 +48,7 @@ DEL snapshots\*.bmp
 	--height=300 ^
 	--x=200 ^
 	--y=200 ^
-	--verbose=on ^
+	--verbose=%verbosity% ^
 	--close=true ^
 	--titlesnapshot="snapshots\iexplore-success.bmp" ^
 	--crashsnapshot="snapshots\iexplore-crash.bmp" ^
@@ -63,7 +66,7 @@ DEL snapshots\*.bmp
 	--height=300 ^
 	--x=200 ^
 	--y=200 ^
-	--verbose=on ^
+	--verbose=%verbosity% ^
 	--close=true ^
 	--titlesnapshot="snapshots\safari-success.bmp" ^
 	--crashsnapshot="snapshots\safari-crash.bmp" ^
@@ -83,7 +86,7 @@ DEL snapshots\*.bmp
 	--height=300 ^
 	--x=200 ^
 	--y=200 ^
-	--verbose=on ^
+	--verbose=%verbosity% ^
 	--close=true ^
 	--titlesnapshot="snapshots\opera-success.bmp" ^
 	--crashsnapshot="snapshots\opera-crash.bmp" ^

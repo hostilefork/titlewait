@@ -19,6 +19,9 @@
 // along with TitleWait.  If not, see <http://www.gnu.org/licenses/>.
 //
 
+#ifndef __TITLEWAIT_PROCESSMONITOR_H__
+#define __TITLEWAIT_PROCESSMONITOR_H__
+
 #include "windows.h"
 
 extern HANDLE lastProcessExitedEvent;
@@ -27,4 +30,6 @@ extern int numProcesses;
 extern DWORD processIds[MAX_PATH];
 extern HANDLE processMonThreads[MAX_PATH];
 
-DWORD WINAPI ProcessMonitorMain( LPVOID lpParam );
+DWORD WINAPI ProcessMonitorMain(LPVOID lpParam);
+
+#endif

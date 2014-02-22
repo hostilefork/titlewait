@@ -19,6 +19,11 @@
 // along with TitleWait.  If not, see <http://www.gnu.org/licenses/>.
 //
 
+#ifndef __TITLEWAIT_TITLEMONITOR_H__
+#define __TITLEWAIT_TITLEMONITOR_H__
+
 #include "windows.h"
 
 DWORD WINAPI TitleMonitorThreadProc(LPVOID lpParam);
+
+#endif

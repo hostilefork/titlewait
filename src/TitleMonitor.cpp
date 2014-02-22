@@ -24,7 +24,7 @@
 
 #include "HelperFunctions.h"
 #include "TitleMonitor.h"
-#include "CaptureEx.h"
+#include "Screenshot.h"
 #include "TitleWaitConfig.h"
 #include "ProcessMonitor.h"
 

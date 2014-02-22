@@ -16,6 +16,12 @@
 // Copyright © 2007 Steven Moore (OrionScorpion).  All Rights Reserved.
 //
 //***********************************************************************/
+
+// ** TITLEWAIT MODIFICATION **
+// http://www.gamedev.net/topic/650803-annoying-swprintf-name-was-marked-as-pragma-deprecated-warnings/
+#pragma warning( push )
+#pragma warning( disable: 4995 )
+
 #include "NTProcessInfo.h"
 #include "HelperFunctions.h"
 
@@ -378,3 +384,7 @@ DWORD EnumProcesses2Array(smPROCESSINFO lpi[MAX_PI])
 	// Return either PID count or MAX_PI whichever is smaller
 	return (DWORD)(dwPIDCount > MAX_PI) ? MAX_PI : dwPIDCount;
 }
+
+// ** TITLEWAIT MODIFICATION **
+// http://www.gamedev.net/topic/650803-annoying-swprintf-name-was-marked-as-pragma-deprecated-warnings/
+#pragma warning( pop )

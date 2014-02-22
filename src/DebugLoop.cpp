@@ -24,14 +24,15 @@
 #include "TitleWait.h"
 #include "DebugLoop.h"
 #include "HelperFunctions.h"
-#include "NTProcessInfo.h"
 #include "ProcessMonitor.h"
 #include "TitleWaitConfig.h"
+#include "NTProcessInfo.h"
+
 
 // NOTE: The screen capturing code is TitleWait's only dependency on
 // GDI32.  Perhaps these functions should be loaded lazily and only if 
 // a screen capture is being done?
-#include "CaptureEx.h"
+#include "Screenshot.h"
 
 
 // See if a previous image is still running of the process we're debugging
@@ -93,11 +94,13 @@ BOOL PreviousStillRunning(std::wstring & exeImageName, DWORD processId)
 		cmdShellOuterProcessId != 0
 	);
 
-	if (mainDebuggeeProcessId == 0)
+	if (mainDebuggeeProcessId == 0) {
 		return FALSE; // not ready to do the process test yet.
+	}
 	
-	if (processId != 0 and mainDebuggeeProcessId != processId)
+	if (processId != 0 and mainDebuggeeProcessId != processId) {
 		return FALSE; // don't suspend threads in wrong process!
+	}
 
 	for (int index = 0; index < dwPIDCount; index++) {
 		if (lpi[index].dwPID == outerExecutiveProcessId)

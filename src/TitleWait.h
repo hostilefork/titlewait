@@ -19,6 +19,8 @@
 // along with TitleWait.  If not, see <http://www.gnu.org/licenses/>.
 //
 
+#ifndef __TITLEWAIT_TITLEWAIT_H__
+#define __TITLEWAIT_TITLEWAIT_H__
 
 //
 // Possible exit codes for the program.  Callers may depend on these
@@ -53,3 +55,5 @@ enum MainReturn {
 	// canceled because user didn't want to wait for previous instance
 	ReturnDeferCancel = 8
 };
+
+#endif

@@ -19,6 +19,9 @@
 // along with TitleWait.  If not, see <http://www.gnu.org/licenses/>.
 //
 
+#ifndef __TITLEWAIT_DEBUGLOOP_H__
+#define __TITLEWAIT_DEBUGLOOP_H__
+
 #include <string>
 #include "windows.h"
 
@@ -34,3 +37,5 @@ struct DebugArgs {
 };
 
 DWORD WINAPI DebugLoopMain(LPVOID lpParam); // returns a MainReturn
+
+#endif
