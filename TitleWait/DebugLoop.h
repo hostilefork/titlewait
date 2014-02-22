@@ -3,7 +3,7 @@
 // Copyright (c) 2008 HostileFork.com
 //
 // This file is part of TitleWait
-// See http://hostilefork.com/titlewait/
+// See http://titlewait.hostilefork.com
 //
 // TitleWait is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -22,13 +22,15 @@
 #include <string>
 #include "windows.h"
 
-struct DEBUGLOOPARGS {
+struct DebugArgs {
 	std::wstring commandLine;
 	STARTUPINFO* startupInfo;
-	LPDWORD millisecondsLeft;
-	HANDLE showMessageEvent; // we tell GUI when we notice another process
-	HANDLE messageRetryEvent; // GUI thread tells us when they said Retry.  We must poll to get this.
-	std::wstring executableImageName;
+	LPDWORD msecLeft;
+	HANDLE deferEvent; // we tell GUI when we notice another process
+	
+	// GUI thread tells us when they said Retry.  We must poll to get this.
+	HANDLE retryEvent; 
+	std::wstring exeImageName;
 };
 
-DWORD WINAPI DebugLoopMain(LPVOID lpParam); // returns a MAINRETURN
+DWORD WINAPI DebugLoopMain(LPVOID lpParam); // returns a MainReturn

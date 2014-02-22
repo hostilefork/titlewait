@@ -62,19 +62,19 @@ BOOL sm_EnableTokenPrivilege(LPCTSTR pszPrivilege)
 // for NtQueryInformationProcess
 HMODULE sm_LoadNTDLLFunctions()
 {
-	InactiveCode() {
-		// Can't use GetModuleFileNameEx
-		// does not work 
-		// http://winprogger.com/?p=26
-		HMODULE psapiDll = LoadLibrary(L"psapi.dll");
-		if (psapiDll != NULL)
-			getProcessImageFileNameFunction = (PGETPROCESSIMAGEFILENAME) GetProcAddress(
-				psapiDll,
-				"GetProcessImageFileNameW"
-		);
-		if (getProcessImageFileNameFunction == NULL)
-			MessageBox(NULL, L"GetProcessImageFileNameW", L"GetProcessImageFileNameW", MB_OK | MB_ICONEXCLAMATION);
-	}
+#ifdef NTPROCESSINFO_LOAD_PSAPI
+	// *** TITLEWAIT MODIFICATION *** ... 
+	// can't use GetModuleFileNameEx...does not work 
+	// http://winprogger.com/?p=26
+	HMODULE psapiDll = LoadLibrary(L"psapi.dll");
+	if (psapiDll != NULL)
+		getProcessImageFileNameFunction = (PGETPROCESSIMAGEFILENAME) GetProcAddress(
+			psapiDll,
+			"GetProcessImageFileNameW"
+	);
+	if (getProcessImageFileNameFunction == NULL)
+		MessageBox(NULL, L"GetProcessImageFileNameW", L"GetProcessImageFileNameW", MB_OK | MB_ICONEXCLAMATION);
+#endif
 
 	HMODULE hNtDll = LoadLibrary(L"ntdll.dll");
 	if(hNtDll == NULL) return NULL;
@@ -96,11 +96,11 @@ void sm_FreeNTDLLFunctions(HMODULE hNtDll)
 		FreeLibrary(hNtDll);
 	gNtQueryInformationProcess = NULL;
 
-	InactiveCode() { /*
-		if (psapiDll != NULL)
+#ifdef NTPROCESSINFO_LOAD_PSAPI
+	// *** TITLEWAIT MODIFICATION *** ... 
+	if (psapiDll != NULL)
 		WindowsVerify(L"FreeLibrary", FreeLibrary(psapiDll));
-		*/ 
-	}
+#endif
 }
 
 // Gets information on process with NtQueryInformationProcess
@@ -135,15 +135,15 @@ BOOL sm_GetNtProcessInfo(const DWORD dwPID, smPROCESSINFO *ppi)
 		return FALSE;
 	}
 
-	// Modification
-	InactiveCode() {
-		// returns "the handle is invalid" ?
-		DWORD moduleNameLength;
-		moduleNameLength = getProcessImageFileNameFunction(hProcess, ppi->szImgPath, MAX_PATH);
-		if (moduleNameLength == 0)
-			WindowsVerify(L"GetProcessImageFileName", FALSE);
-		return TRUE;
-	}
+#ifdef NTPROCESSINFO_CALL_GETPROCESSIMAGEFILENAME
+	// *** TITLEWAIT MODIFICATION *** ... 
+	// This was returning "the handle is invalid"... we don't need it anyway.
+	DWORD moduleNameLength;
+	moduleNameLength = getProcessImageFileNameFunction(hProcess, ppi->szImgPath, MAX_PATH);
+	if (moduleNameLength == 0)
+		WindowsVerify(L"GetProcessImageFileName", FALSE);
+	return TRUE;
+#endif
 
 	// Try to allocate buffer 
 	hHeap = GetProcessHeap();
@@ -204,18 +204,22 @@ BOOL sm_GetNtProcessInfo(const DWORD dwPID, smPROCESSINFO *ppi)
 				spi.dwSessionID	   = (DWORD)peb.SessionId;
 				spi.cBeingDebugged = (BYTE)peb.BeingDebugged;
 
-				InactiveCode() {
-					// Here we could access PEB_LDR_DATA, i.e., module list for process
-					dwBytesRead = 0;
-					if(ReadProcessMemory(hProcess,
-										 pbi->PebBaseAddress->Ldr,
-										 &peb_ldr,
-										 sizeof(peb_ldr),
-										 &dwBytesRead))
-					{
-					// get ldr
-					}
+#ifdef NTPROCESSINFO_ACCESS_PEB_LDR_DATA
+				// *** TITLEWAIT MODIFICATION *** ... 
+				// Was causing problems and it wasn't even being used for anything
+				// So #ifdef'd it out
+
+				// Here we could access PEB_LDR_DATA, i.e., module list for process
+				dwBytesRead = 0;
+				if(ReadProcessMemory(hProcess,
+										pbi->PebBaseAddress->Ldr,
+										&peb_ldr,
+										sizeof(peb_ldr),
+										&dwBytesRead))
+				{
+				// get ldr
 				}
+#endif
 
 				// if PEB read, try to read Process Parameters
 				dwBytesRead = 0;

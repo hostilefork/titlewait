@@ -2,10 +2,10 @@
 // ProgramOptions.cpp
 // Copyright (c) 2008 HostileFork.com
 //
-// See comments in ProgramOptions.h
+// See comments in TitleWaitConfig.h
 //
 // This file is part of TitleWait
-// See http://hostilefork.com/titlewait/
+// See http://titlewait.hostilefork.com
 //
 // TitleWait is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -25,18 +25,18 @@
 #include <string>
 #include <sstream>
 
-#include "ProgramOptions.h"
+#include "TitleWaitConfig.h"
 #include "HelperFunctions.h"
 
 // Nasty global variables, but Windows isn't particularly good about making
 // it easy to pass 64-bit compatible pointers around in callbacks, ever since
 // the trick of poking a 32-bit value into GWL_USER went away...
-CONFIG configWritable;
+TitleWaitConfig configWritable;
 
-// Use this alias to access the program options if you don't need to change them
-const CONFIG& config = configWritable;
+// Use this to access the program options if you don't need to change them
+TitleWaitConfig const & config = configWritable;
 
-std::wstring optionNames[optionMax] = {
+std::wstring TitleWaitConfig::optionNames[OptionMax] = {
 	L"help",
 	L"regex",
 	L"close",
@@ -46,6 +46,7 @@ std::wstring optionNames[optionMax] = {
 	L"timeout",
 	L"crashsnapshot",
 	L"titlesnapshot",
+	L"timeoutsnapshot",
 	L"program",
 	L"args",
 	L"defer",
@@ -112,8 +113,9 @@ bool GetStringOption(
 	return false;
 }
 
-bool CONFIG::ProcessCommandLineArgs(int numberOfArgs, LPWSTR commandLineArgs[]) {
-
+bool TitleWaitConfig::ProcessCommandLineArgs(
+	int numberOfArgs, LPWSTR commandLineArgs[]
+) {
 	bool result = true;
 
 	configWritable.help = (numberOfArgs <= 1);
@@ -124,12 +126,12 @@ bool CONFIG::ProcessCommandLineArgs(int numberOfArgs, LPWSTR commandLineArgs[]) 
 		bool validValue = true;
 
 		std::wstring arg (commandLineArgs[argIndex]);
-		for (int optionInt = 0; optionInt < optionMax; optionInt++) {
-			OPTION option = static_cast<OPTION>(optionInt);
+		for (int optInt = 0; optInt < OptionMax; optInt++) {
+			Option option = static_cast<Option>(optInt);
 
 			std::wstringstream decoratedOption;
-			decoratedOption << L"--" << optionNames[optionInt];
-			if (option != optionHelp) {
+			decoratedOption << L"--" << optionNames[optInt];
+			if (option != HelpOption) {
 				decoratedOption << "=";
 			}
 
@@ -142,153 +144,165 @@ bool CONFIG::ProcessCommandLineArgs(int numberOfArgs, LPWSTR commandLineArgs[]) 
 
 			// Substring from past the equals sign to end of string
 			// This means we may get quotes around string arguments
-			std::wstring value (arg.substr(decoratedOption.str().length(), std::string::npos));
+			std::wstring value (
+				arg.substr(decoratedOption.str().length(), std::string::npos)
+			);
 			switch (option) {
-			case optionHelp:
+			case HelpOption:
 				configWritable.help = true;
 				validValue = true;
 				break;
 
-			case optionRegex:
+			case RegexOption:
 				validValue = GetStringOption(
-					optionNames[optionInt],
+					optionNames[optInt],
 					value,
 					/*&*/ configWritable.regex
 				);
 				break;
 
-			case optionClose:
+			case CloseOption:
 				// NOTE: Can't set a timeOut without closing when found
 				// require parameter to be passed in as close=TRUE
 				validValue = GetBoolOption(
-					optionNames[optionInt],
+					optionNames[optInt],
 					value,
 					/*&*/ configWritable.close
 				);	
 				break;
 
-			case optionAll:
+			case AllOption:
 				validValue = GetBoolOption(
-					optionNames[optionInt],
+					optionNames[optInt],
 					value,
 					/*&*/ configWritable.all
 				);
 				break;
 
-			case optionVerbose:
+			case VerboseOption:
 				validValue = GetBoolOption(
-					optionNames[optionInt],
+					optionNames[optInt],
 					value,
 					/*&*/ configWritable.verbose
 				);
 				break;
 
-			case optionFrequency:
+			case FrequencyOption:
 				validValue = GetDwordOption(
-					optionNames[optionInt],
+					optionNames[optInt],
 					value,
 					/*&*/ configWritable.frequency
 				);
 				break;
 	
-			case optionTimeout:
+			case TimeoutOption:
 				validValue = GetDwordOption(
-					optionNames[optionInt],
+					optionNames[optInt],
 					value,
 					/*&*/ configWritable.timeout
 				);
 				break;
 
-			case optionCrashsnapshot:
+			case CrashSnapshotOption:
 				validValue = GetStringOption(
-					optionNames[optionInt],
+					optionNames[optInt],
 					value,
 					/*&*/ configWritable.crashsnapshot
 				);
 				break;
 
-			case optionTitlesnapshot:
+			case TitleSnapshotOption:
 				validValue = GetStringOption(
-					optionNames[optionInt],
+					optionNames[optInt],
 					value,
 					/*&*/ configWritable.titlesnapshot
 				);
 				break;
 
-			case optionProgram:
+			case TimeoutSnapshotOption:
 				validValue = GetStringOption(
-					optionNames[optionInt],
+					optionNames[optInt],
+					value,
+					/*&*/ configWritable.timeoutsnapshot
+				);
+				break;
+
+			case ProgramOption:
+				validValue = GetStringOption(
+					optionNames[optInt],
 					value,
 					/*&*/ configWritable.program
 				);
 				break;
 
-			case optionArgs:
+			case ArgsOption:
 				validValue = GetStringOption(
-					optionNames[optionInt],
+					optionNames[optInt],
 					value,
 					/*&*/ configWritable.args
 				);
 				break;
 
-			case optionDefer:
+			case DeferOption:
 				validValue = GetBoolOption(
-					optionNames[optionInt],
+					optionNames[optInt],
 					value,
 					/*&*/ configWritable.defer
 				);
 				break;
 
-			case optionX:
+			case XOption:
 				validValue = GetDwordOption(
-					optionNames[optionInt],
+					optionNames[optInt],
 					value,
 					/*&*/ configWritable.x
 				);
 				break;
 
-			case optionY:
+			case YOption:
 				validValue = GetDwordOption(
-					optionNames[optionInt],
+					optionNames[optInt],
 					value,
 					/*&*/ configWritable.y
 				);
 				break;
 
-			case optionWidth:
+			case WidthOption:
 				validValue = GetDwordOption(
-					optionNames[optionInt],
+					optionNames[optInt],
 					value,
 					/*&*/ configWritable.width
 				);
 				break;
 
-			case optionHeight:
+			case HeightOption:
 				validValue = GetDwordOption(
-					optionNames[optionInt],
+					optionNames[optInt],
 					value,
 					/*&*/ configWritable.height
 				);
 				break;
 
-			case optionShutdownevent:
-				{
-					void* shutdowneventPtr;
-					validValue = GetPointerOption(
-						optionNames[optionInt],
-						value,
-						/*&*/ shutdowneventPtr
-					);
-					configWritable.shutdownevent = static_cast<HANDLE>(shutdowneventPtr);
-				}
+			case ShutdownEventOption: {
+				void* shutdowneventPtr;
+				validValue = GetPointerOption(
+					optionNames[optInt],
+					value,
+					/*&*/ shutdowneventPtr
+				);
+				configWritable.shutdownevent = 
+					static_cast<HANDLE>(shutdowneventPtr);
 				break;
+			}
 
 			default:
 				Verify(L"Unreachable code", FALSE);
 			}
 
 			if (not validValue) {
-				std::wcerr << L"Invalid option value for " << optionNames[optionInt];
+				std::wcerr << 
+					L"Invalid option value for " <<
+					optionNames[optInt];
 				std::wcerr << L": " << value << L'\n';
 				result = false;
 			}

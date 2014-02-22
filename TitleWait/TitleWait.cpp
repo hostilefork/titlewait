@@ -3,7 +3,7 @@
 // Copyright (c) 2008 HostileFork.com
 //
 // This file is part of TitleWait
-// See http://hostilefork.com/titlewait/
+// See http://titlewait.hostilefork.com
 //
 // TitleWait is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -28,42 +28,45 @@
 
 #include "TitleWait.h"
 #include "HelperFunctions.h"
-#include "ProgramOptions.h"
+#include "TitleWaitConfig.h"
 #include "DebugLoop.h"
 #include "TitleMonitor.h"
 #include "ProcessMonitor.h"
+#include "CaptureEx.h"
 
 // No TCHAR legacy, assume WCHAR everywhere...
 // http://stackoverflow.com/a/3002494
 
+
 // Define wmain instead of _tmain, project defines _UNICODE
 // http://stackoverflow.com/a/895894
-int wmain(int numberOfArgs, WCHAR* commandLineArgs[])
+int wmain(int numberOfArgs, WCHAR * programArgs[])
 {	
-	if (!configWritable.ProcessCommandLineArgs(numberOfArgs, commandLineArgs)) {
-		return mainReturnBadArguments;
+	if (!configWritable.ProcessCommandLineArgs(numberOfArgs, programArgs)) {
+		return ReturnBadArguments;
 	}
 
 	if (config.help) {
 		std::wcout << L"TitleWait (c) 2008 HostileFork.com\n";
-		std::wcout << L"See http://hostilefork.com/titlewait/ for documentation and news\n\n";
+		std::wcout << L"See http://titlewait.hostilefork.com\n\n";
 
 		std::wcout << L"Option list:\n\n";
 
-		for (int optionInt = 0; optionInt < optionMax; optionInt++) {
-			OPTION option = static_cast<OPTION>(optionInt);
+		for (int optInt = 0; optInt < TitleWaitConfig::OptionMax; optInt++) {
+			TitleWaitConfig::Option option =
+				static_cast<TitleWaitConfig::Option>(optInt);
 
 			std::wstringstream decoratedOption;
-			decoratedOption << L"--" << optionNames[optionInt];
+			decoratedOption << L"--" << TitleWaitConfig::optionNames[optInt];
 
 			std::wcout << decoratedOption.str() << L'\n';
 		}
-		return mainReturnSuccess;
+		return ReturnSuccess;
 	}
 
 	if (config.program.empty()) {
 		std::wcerr << L"No program specified via --program.  Nothing to do!\n";
-		return mainReturnNoProgram;
+		return ReturnNoProgram;
 	}
 
 	// Sometimes if you are using a scripting tool to launch a traditional
@@ -77,13 +80,13 @@ int wmain(int numberOfArgs, WCHAR* commandLineArgs[])
 	// debug-enabled programs this *will* start a debugger.  Use only if
 	// other approaches are not working.
 
-	MAINRETURN returnCode = mainReturnInternalError;
-	DWORD millisecondsLeft =
+	MainReturn returnCode = ReturnInternalError;
+	DWORD msecLeft =
 		config.timeout == 0
 		? INFINITE
 		: config.timeout * 1000;
 
-	if (config.shutdownevent != NULL) {
+	if (config.shutdownevent) {
 
 		// NESTED EXECUTIVE
 		//
@@ -144,7 +147,11 @@ int wmain(int numberOfArgs, WCHAR* commandLineArgs[])
 
 		int systemResult = system(commandLine.str().c_str());
 
-		debugInfoA("system(%s) returned with result %d\n", commandLine.str().c_str(), systemResult);
+		debugInfoA(
+			"system(%s) returned with result %d\n",
+			commandLine.str().c_str(),
+			systemResult
+		);
 
 		HANDLE neverEvent = CreateEvent( 
 			NULL,  // default security attributes
@@ -154,10 +161,12 @@ int wmain(int numberOfArgs, WCHAR* commandLineArgs[])
 			);
 
 		debugInfo(L"Waiting indefinitely, must kill this thread");
-		WindowsVerify(L"WaitForSingleObject", WaitForSingleObject(neverEvent, INFINITE) == WAIT_OBJECT_0);
+		WindowsVerify(L"WaitForSingleObject",
+			WaitForSingleObject(neverEvent, INFINITE) == WAIT_OBJECT_0
+		);
 
-		// Exit code of second process started is what we should detect in parent...
-		return mainReturnRunClosed;
+		// Exit code of second process started is what we detect in parent...
+		return ReturnRunClosed;
 	}
 
 	// Create the thread to begin execution on its own.
@@ -194,136 +203,199 @@ int wmain(int numberOfArgs, WCHAR* commandLineArgs[])
 
 		std::wstringstream commandLine;
 
-		DWORD moduleFileNameSize;
-		TCHAR moduleFileName[MAX_PATH];
-		moduleFileNameSize = GetModuleFileName(NULL, moduleFileName, sizeof(moduleFileName));
-		Verify(L"GetModuleFilename returned string longer than MAX_PATH", moduleFileNameSize < sizeof(moduleFileName));
+		DWORD moduleNameSize;
+		TCHAR moduleName[MAX_PATH];
+		moduleNameSize = GetModuleFileName(
+			NULL, moduleName, sizeof(moduleName)
+		);
+		Verify(L"GetmoduleName returned string longer than MAX_PATH",
+			moduleNameSize < sizeof(moduleName)
+		);
 
-		commandLine << L'"' << moduleFileName << L'"';
+		commandLine << L'"' << moduleName << L'"';
 
-		for (int index = 1; index < numberOfArgs; index++) {
+		for (int argIndex = 1; argIndex < numberOfArgs; argIndex++) {
 			commandLine << L' ';
 
 			// must escape any single quotes with \"
-			for (int indexChar = 0; indexChar < wcslen(commandLineArgs[index]); indexChar++) {
-				if (commandLineArgs[index][indexChar] == L'"') {
+			for (int index = 0; index < wcslen(programArgs[argIndex]); index++) {
+				if (programArgs[argIndex][index] == L'"') {
 					commandLine << L'\\';
 					commandLine << L'"';
-				} else if (commandLineArgs[index][indexChar] == L'=') {
+				} else if (programArgs[argIndex][index] == L'=') {
 					commandLine << L'=';
 					commandLine << L'"';
 				} else {
-					commandLine << commandLineArgs[index][indexChar];
+					commandLine << programArgs[argIndex][index];
 				}
 			}
 			commandLine << L'"';
 		}
 
-		// We'll be running the same command again, only add one little thing...
-		// Simulate %p by casting to void: http://stackoverflow.com/a/5657144/211160
-
-		commandLine << L" --shutdownevent=" << static_cast<void*>(lastProcessExitedEvent);
+		// We'll be running the same command again, only add shutdownevent
+		// Simulate %p by casting to void:
+		//
+		//     http://stackoverflow.com/a/5657144/211160
+		//
+		commandLine << 
+			L" --shutdownevent=" << 
+			static_cast<void*>(lastProcessExitedEvent);
 
 		// see: http://www.catch22.net/tuts/undoc01.asp
 		STARTUPINFO startupInfo;
 		ZeroMemory(&startupInfo, sizeof(STARTUPINFO));
 		startupInfo.cb = sizeof(STARTUPINFO);
 
-		startupInfo.wShowWindow = config.shouldRepositionWindow() ? SW_HIDE : SW_SHOW;
+		startupInfo.wShowWindow = config.shouldMoveWindow() ? SW_HIDE : SW_SHOW;
 
-		InactiveCode() {
-			// Wondered if NULL for lpDesktop was causing problems in the startupInfo.  Turned out 
-			// to not be the problem.  Might want to give user power to specify which desktop though
+#ifdef CREATE_PROCESS_WITH_DESKTOP
+		// Wondered if NULL for lpDesktop was causing problems in the
+		// startupInfo.  Turned out to not be the problem.  Might want to
+		// give user power to specify which desktop though
 
-			HDESK desktopForThread = GetThreadDesktop(GetCurrentThreadId());
-			DWORD desktopNameLength;
-			if (!GetUserObjectInformation(desktopForThread, UOI_NAME, NULL, 0, &desktopNameLength)) {
-				DWORD lastError = GetLastError();
-				if (lastError != 0x7a) // ignore errors here, because we get an error for passing in a buffer that's too small
-					ExitProgramOnWindowsError(L"GetUserObjectInformation", lastError);
+		HDESK desktopForThread = GetThreadDesktop(GetCurrentThreadId());
+		DWORD desktopNameLength;
+		if (!GetUserObjectInformation(
+			desktopForThread,
+			UOI_NAME,
+			NULL,
+			0,
+			&desktopNameLength
+		)) {
+			DWORD lastError = GetLastError();
+			// we expect the error for passing in a buffer that's too small
+			if (lastError != 0x7a) {
+				ExitProgramOnWindowsError(L"GetUserObjectInformation",
+					lastError
+				);
 			}
-			LPWSTR desktopName = (LPWSTR)VirtualAlloc((LPVOID) NULL, (DWORD) (desktopNameLength + 1), MEM_COMMIT, PAGE_READWRITE); 
-			WindowsVerify(L"GetUserObjectInformation", GetUserObjectInformation(desktopForThread, UOI_NAME, desktopName, desktopNameLength + 1, NULL));
-			startupInfo.lpDesktop = desktopName; 
-
-			/* (...process create...) */
-
-			VirtualFree(desktopName, 0, MEM_RELEASE);
 		}
+		LPWSTR desktopName = (LPWSTR)VirtualAlloc(
+			(LPVOID) NULL,
+			(DWORD) (desktopNameLength + 1),
+			MEM_COMMIT,
+			PAGE_READWRITE
+		); 
+		WindowsVerify(L"GetUserObjectInformation",
+			GetUserObjectInformation(
+				desktopForThread,
+				UOI_NAME,
+				desktopName,
+				desktopNameLength + 1,
+				NULL
+			)
+		);
+		startupInfo.lpDesktop = desktopName; 
 
-		InactiveCode() {
-			// Tried CreateProcessAsUser and link with advapi32.lib.  That didn't help launch issue one bit.
-			HANDLE tokenHandle;
-			WindowsVerify(L"OpenProcessToken", OpenProcessToken(GetCurrentProcess(), TOKEN_ALL_ACCESS, &tokenHandle));
-			/*if (CreateProcessAsUser(tokenHandle, ... */
-		}
+		/* (...process create...) */
+
+		VirtualFree(desktopName, 0, MEM_RELEASE);
+#endif
+
+#ifdef CREATE_PROCESS_AS_USER
+		// Tried CreateProcessAsUser and link with advapi32.lib.
+		// That didn't help launch issue one bit!
+		HANDLE tokenHandle;
+		WindowsVerify(L"OpenProcessToken",
+			OpenProcessToken(
+				GetCurrentProcess(),
+				TOKEN_ALL_ACCESS,
+				&tokenHandle
+			)
+		);
+		/*if (CreateProcessAsUser(tokenHandle, ... */
+#endif
 		
-		InactiveCode() {	
-			// You would think this would work, as it's been documented to... but it does not
-			// Causes the process to freeze up, you have to then run ResumeThread on it
-			// Yet even still, the window will pick its own coordinates
-			startupInfo.dwX = config.x;
-			startupInfo.dwY = config.y;
-			startupInfo.dwXSize = config.width;
-			startupInfo.dwYSize = config.height; 
+#ifdef USE_STARTUPINFO_FOR_WINDOW_POSITION
+		// You would think this would work, as it's been documented to.
+		// But it does not work.
+		//
+		// Causes the process to freeze up, you have to then run ResumeThread
+		// on it... even then, the window will pick its own coordinates
+		startupInfo.dwX = config.x;
+		startupInfo.dwY = config.y;
+		startupInfo.dwXSize = config.width;
+		startupInfo.dwYSize = config.height; 
 			
 			/* (...process create...) */
 			}
+#endif
 		 
 		startupInfo.hStdInput = stdin;
 		startupInfo.hStdOutput = stdout;
 		startupInfo.hStdError = stderr;
 
-		DEBUGLOOPARGS debugLoopArgs;
-		debugLoopArgs.startupInfo = &startupInfo;
-		debugLoopArgs.commandLine = commandLine.str();
-		debugLoopArgs.millisecondsLeft = &millisecondsLeft;
-		debugLoopArgs.showMessageEvent = CreateEvent(NULL, TRUE, FALSE, L"showMessageEvent");
-		debugLoopArgs.messageRetryEvent = CreateEvent(NULL, TRUE, FALSE, L"messageRetryEvent");
-		debugLoopArgs.executableImageName = L"";
+		// argument to thread function
+		// we shouldn't read from this until thread is terminated!!
+		DebugArgs debugArgs;
+		debugArgs.startupInfo = &startupInfo;
+		debugArgs.commandLine = commandLine.str();
+		debugArgs.msecLeft = &msecLeft;
+		debugArgs.deferEvent = CreateEvent(
+			NULL,
+			TRUE,
+			FALSE,
+			L"deferEvent"
+		);
+		debugArgs.retryEvent = CreateEvent(
+			NULL,
+			TRUE,
+			FALSE,
+			L"retryEvent"
+		);
+		debugArgs.exeImageName = L"";
 		
-		// Create the debugger thread.  Unfortunately we can't put message boxes and such up
-		// in a debug thread without sometimes hanging the UI.
-		DWORD debugLoopThreadId;
-		HANDLE debugLoopThread = CreateThread( 
+		// Create the debugger thread.  Unfortunately we can't put message
+		// boxes and such up in a debug thread without sometimes hanging the UI
+		DWORD debugThreadId;
+		HANDLE debugThread = CreateThread( 
 			NULL, // default security attributes
 			0, // use default stack size
 			DebugLoopMain, // thread function name
-			&debugLoopArgs, // argument to thread function, we shouldn't read this until thread is terminated!!
+			&debugArgs, 
 			0, // use default creation flags 
-			&debugLoopThreadId
+			&debugThreadId
 		);
-		if (debugLoopThread == NULL)
+		if (debugThread == NULL)
 			WindowsVerify(L"CreateThread", FALSE);
 
-		// Dirt simple GUI thread right now, we wait for a signal or thread termination...then read returnCode
+		// Dirt simple GUI thread right now, we wait for a signal or thread
+		// termination...then read returnCode
 
-		HANDLE waitOnObjects[2] = {debugLoopThread, debugLoopArgs.showMessageEvent};
+		HANDLE waitOnObjects[2] = {debugThread, debugArgs.deferEvent};
 		BOOL debugLoopRunning = TRUE;
 		while (debugLoopRunning) {
 			switch(WaitForMultipleObjects(2, waitOnObjects, FALSE, INFINITE)) {
 			case WAIT_OBJECT_0:
 				debugLoopRunning = FALSE;
 				break;
-			case WAIT_OBJECT_0+1:
-				{
-					WindowsVerify(L"ResetEvent", ResetEvent(debugLoopArgs.showMessageEvent));
-					std::wstringstream message;
-					message << L"Spawning process " << debugLoopArgs.executableImageName
-						<< L" that already has at least one running instance already. " 
-						<< L"Because you are using defer, this message box will "
-						<< L"stay until you close the other instance.  Press Retry when "
-						<< L"you've closed the other processes or cancel to quit.";
+			case WAIT_OBJECT_0+1: {
+				WindowsVerify(L"ResetEvent", 
+					ResetEvent(debugArgs.deferEvent)
+				);
+				std::wstringstream message;
+				message << L"Spawning process " << debugArgs.exeImageName
+					<< L" with at least one running instance already. " 
+					<< L"Since you are using --defer, this message will "
+					<< L"stay the other instance closes.  Press Retry when "
+					<< L"the other processes are closed or cancel to quit.";
 
-					int id = MessageBox(NULL, message.str().c_str(), L"Lite Wait Title - defer", MB_RETRYCANCEL | MB_ICONEXCLAMATION);
-					WindowsVerify(L"MessageBox", id != 0);
-					if (id == IDCANCEL) {
-						ExitProcess(mainReturnDeferCancel);
-					} else {
-						WindowsVerify(L"SetEvent", SetEvent(debugLoopArgs.messageRetryEvent));
-					}
+				int id = MessageBox(
+					NULL,
+					message.str().c_str(),
+					L"TitleWait - Defer Handling",
+					MB_RETRYCANCEL | MB_ICONEXCLAMATION
+				);
+				WindowsVerify(L"MessageBox", id != 0);
+				if (id == IDCANCEL) {
+					ExitProcess(ReturnDeferCancel);
+				} else {
+					WindowsVerify(L"SetEvent",
+						SetEvent(debugArgs.retryEvent)
+					);
 				}
 				break;
+			}
 
 			default:
 				WindowsVerify(L"WaitForMultipleObjects", FALSE);
@@ -331,12 +403,14 @@ int wmain(int numberOfArgs, WCHAR* commandLineArgs[])
 		}
 
 		DWORD dwReturnCode;
-		WindowsVerify(L"GetExitCodeThread", GetExitCodeThread(debugLoopThread, &dwReturnCode));
-		returnCode = (MAINRETURN)dwReturnCode;
+		WindowsVerify(L"GetExitCodeThread", 
+			GetExitCodeThread(debugThread, &dwReturnCode)
+		);
+		returnCode = (MainReturn)dwReturnCode;
 
-		WindowsVerify(L"CloseHandle", CloseHandle(debugLoopThread));
-		WindowsVerify(L"CloseHandle", CloseHandle(debugLoopArgs.showMessageEvent));
-		WindowsVerify(L"CloseHandle", CloseHandle(debugLoopArgs.messageRetryEvent));
+		WindowsVerify(L"CloseHandle", CloseHandle(debugThread));
+		WindowsVerify(L"CloseHandle", CloseHandle(debugArgs.deferEvent));
+		WindowsVerify(L"CloseHandle", CloseHandle(debugArgs.retryEvent));
 
 		WindowsVerify(L"CloseHandle", CloseHandle(processListMutex));
 		processListMutex = NULL;
@@ -346,31 +420,44 @@ int wmain(int numberOfArgs, WCHAR* commandLineArgs[])
 	}
 
 	if (config.program.empty()
-		or ((returnCode == mainReturnRunClosed) and (config.all))) {
+		or ((returnCode == ReturnRunClosed) and (config.all))) {
 
-		// Assume user will start relevant process to make the title on their own
-		switch(WaitForSingleObject(titleMonitorThread, millisecondsLeft)) {
+		// Assume user will start process to make the title on their own
+		switch(WaitForSingleObject(titleMonitorThread, msecLeft)) {
 			case WAIT_OBJECT_0:
 				// success, thread died of its own accord...
-				returnCode = mainReturnSuccess;
+				returnCode = ReturnSuccess;
 				break;
 			case WAIT_TIMEOUT:
-				returnCode = mainReturnTimedOut;
+				// This case's screen shot may not be much use, but if we are
+				// returning the timeout code from the executable we should take
+				// a picture of *something* if they requested a timeoutsnapshot
+				if (not config.timeoutsnapshot.empty()) {
+					Verify(L"Screen Capture Failed",
+						TakeScreenshotToFile(config.timeoutsnapshot.c_str())
+					);
+				}
+				returnCode = ReturnTimedOut;
 				break;
 			default:
 				WindowsVerify(L"WaitForSingleObject", FALSE);
-				returnCode = mainReturnInternalError; // Never executed
+				returnCode = ReturnInternalError; // Never executed
 		}
 	}
 
 	if (config.verbose)
 		std::wcout << L"Return Code was " << returnCode << L"\n";
 
-	// Cleanly tie up the monitor thread.  It may be in a finished state, thus waiting on it returns immediately
-	if (WaitForSingleObject(titleMonitorThread, 0) != WAIT_OBJECT_0)
-		WindowsVerify(L"PostThreadMessage", PostThreadMessage(titleMonitorThreadId, WM_QUIT, 0, 0));
-	if (WaitForSingleObject(titleMonitorThread, INFINITE) != WAIT_OBJECT_0)
+	// Cleanly tie up the monitor thread.
+	// It may be in a finished state, thus waiting on it returns immediately
+	if (WaitForSingleObject(titleMonitorThread, 0) != WAIT_OBJECT_0) {
+		WindowsVerify(L"PostThreadMessage",
+			PostThreadMessage(titleMonitorThreadId, WM_QUIT, 0, 0)
+		);
+	}
+	if (WaitForSingleObject(titleMonitorThread, INFINITE) != WAIT_OBJECT_0) {
 		WindowsVerify(L"WaitForSingleObject", FALSE);
+	}
 
 	WindowsVerify(L"CloseHandle", CloseHandle(titleMonitorThread));
 

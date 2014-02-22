@@ -3,7 +3,7 @@
 // Copyright (c) 2008 HostileFork.com
 //
 // This file is part of TitleWait
-// See http://hostilefork.com/titlewait/
+// See http://titlewait.hostilefork.com
 //
 // TitleWait is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -24,7 +24,7 @@
 
 #include "TitleWait.h"
 #include "HelperFunctions.h"
-#include "ProgramOptions.h" // for main return codes?
+#include "TitleWaitConfig.h" // for main return codes?
 
 // from http://alter.org.ua/docs/win/args/
 // Copyright (c) 2002-2013 by Alter aka Alexander A. Telyatnikov		
@@ -119,6 +119,7 @@ PCHAR* CommandLineToArgvA(PCHAR CmdLine, int* _argc)
 	return argv;
 }
 
+
 // Print a windows error
 void WindowsErrorToStderr(LPWSTR functionName, DWORD errorCode, UINT lineNumber)
 {
@@ -133,33 +134,67 @@ void WindowsErrorToStderr(LPWSTR functionName, DWORD errorCode, UINT lineNumber)
 		size, 
 		NULL))
 	{
-		fwprintf(stderr, L"error: 0x%x on line %d in %s - %s", errorCode, lineNumber, functionName, buffer);
+		fwprintf(
+			stderr, 
+			L"error: 0x%x on line %d in %s - %s",
+			errorCode,
+			lineNumber,
+			functionName,
+			buffer
+		);
 	} else {
 		DWORD formatMessageErrorCode = GetLastError();
-		fwprintf(stderr, L"error: 0x%x on line %d in %s (FormatMessage failed with 0x%x)\n", errorCode, lineNumber, functionName, formatMessageErrorCode);
+		fwprintf(
+			stderr,
+			L"error: 0x%x on line %d in %s (FormatMessage failed with 0x%x)\n",
+			errorCode,
+			lineNumber,
+			functionName,
+			formatMessageErrorCode
+		);
 	}
-	ExitProcess(mainReturnInternalError);
+	ExitProcess(ReturnInternalError);
 }
 
-void ExitProgramOnWindowsError_Core(LPWSTR functionName, DWORD errorCode, UINT lineNumber)
-{
-		fwprintf(stderr, L"Terminating program, please visit http://hostilefork.com to report this error.");
-		WindowsErrorToStderr(functionName, errorCode, lineNumber);
+
+void ExitProgramOnWindowsError_Core(
+	LPWSTR functionName, DWORD errorCode, UINT lineNumber
+) {
+	fwprintf(
+		stderr,
+		L"Report issue to https://github.com/hostilefork/titlewait/issues"
+	);
+	WindowsErrorToStderr(functionName, errorCode, lineNumber);
 }
+
 
 // If there is an error with Windows, fail noisily.
-void WindowsVerify_Core(LPWSTR functionName, BOOL windowsReturn, UINT lineNumber) {
+void WindowsVerify_Core(
+	LPWSTR functionName, BOOL windowsReturn, UINT lineNumber
+) {
 	if (!windowsReturn) {
 		ExitProgramOnWindowsError_Core(functionName, GetLastError(), lineNumber);
 	}
 }
 
+
 void Verify_Core(LPWSTR msg, BOOL expr, UINT lineNumber) {
-	if (!expr) {
-		fwprintf(stderr, L"Terminating program on line %d: condition %s, please visit http://hostilefork.com to report this error.", lineNumber, msg);
-		ExitProcess(mainReturnInternalError);
+	if (expr) {
+		return;
 	}
+
+	fwprintf(stderr,
+		L"Terminating program on line %d: condition %s\n",
+		lineNumber,
+		msg
+	);
+	fwprintf(
+		stderr,
+		L"Report issue to https://github.com/hostilefork/titlewait/issues"
+	);
+	ExitProcess(ReturnInternalError);
 }
+
 
 int debugInfo(LPWSTR formatString, ...){
 	if (config.verbose) {
@@ -177,6 +212,7 @@ int debugInfo(LPWSTR formatString, ...){
 	return 0;
 }
 
+
 int debugInfoA(char* formatString, ...){
 	if (config.verbose) {
 		int retval=0;
@@ -193,16 +229,22 @@ int debugInfoA(char* formatString, ...){
 	return 0;
 }
 
+
 // http://gd.tuwien.ac.at/infosys/mail/vm/base64-encode.c
 // (public domain)
 
 UCHAR alphabet[64] = {
-	'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'a', 'b', 'c', 'd', 'e', 
-	'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q',	'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '+', '/' 
+	'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O',
+	'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'a', 'b', 'c', 'd',
+	'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's',
+	't', 'u', 'v', 'w', 'x', 'y', 'z', '0', '1', '2', '3', '4', '5', '6', '7',
+	'8', '9', '+', '/' 
 };
 
-BOOL base64_encode(const UCHAR* input, DWORD input_length, UCHAR* output, DWORD* output_length)
-{
+
+BOOL base64_encode(
+	const UCHAR* input, DWORD input_length, UCHAR* output, DWORD* output_length
+) {
 	int cols = 0;
 	int bits = 0;
 	int char_count = 0;
@@ -252,11 +294,13 @@ BOOL base64_encode(const UCHAR* input, DWORD input_length, UCHAR* output, DWORD*
 	return TRUE;
 }
 
+
 // http://gd.tuwien.ac.at/infosys/mail/vm/base64-decode.c
 // (public domain)
 
-BOOL base64_decode(const UCHAR* input, DWORD input_length, UCHAR* output, DWORD* output_length)
-{
+BOOL base64_decode(
+	const UCHAR* input, DWORD input_length, UCHAR* output, DWORD* output_length
+) {
 	static char inalphabet[256];
 	static char decoder[256];
 

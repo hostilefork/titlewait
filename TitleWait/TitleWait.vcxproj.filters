@@ -33,10 +33,10 @@
     <ClInclude Include="ProcessMonitor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ProgramOptions.h">
+    <ClInclude Include="TitleWait.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="TitleWait.h">
+    <ClInclude Include="ProgramOptions.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -56,13 +56,13 @@
     <ClCompile Include="ProcessMonitor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ProgramOptions.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="NTProcessInfo.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="TitleWait.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TitleWaitConfig.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

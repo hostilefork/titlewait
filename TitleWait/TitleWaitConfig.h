@@ -1,5 +1,5 @@
 //
-// ProgramOptions.h
+// TitleWaitConfig.h
 // Copyright (c) 2008 HostileFork.com
 //
 // Lame program option reading routines.  When I started this
@@ -16,7 +16,7 @@
 //     --optionname="stuff in quotes, usually"
 // 
 // This file is part of TitleWait
-// See http://hostilefork.com/titlewait/
+// See http://titlewait.hostilefork.com
 //
 // TitleWait is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -37,36 +37,37 @@
 #include "windows.h"
 #include "HelperFunctions.h"
 
-enum OPTION {
-	optionFirst = 0,
-	optionHelp = 0,
-	optionRegex,
-	optionClose,
-	optionAll,
-	optionVerbose,
-	optionFrequency,
-	optionTimeout,
-	optionCrashsnapshot,
-	optionTitlesnapshot,
-	optionProgram,
-	optionArgs,
-	optionDefer,
-	optionX,
-	optionY,
-	optionWidth,
-	optionHeight,
-	optionShutdownevent,
-	optionMax
-};
-
-extern std::wstring optionNames[optionMax];
-
 //
 // Program configuration.
 // Where possible they should match the string in the command line
 //
-struct CONFIG
+struct TitleWaitConfig
 {
+	enum Option {
+		OptionFirst = 0,
+		HelpOption = 0,
+		RegexOption,
+		CloseOption,
+		AllOption,
+		VerboseOption,
+		FrequencyOption,
+		TimeoutOption,
+		CrashSnapshotOption,
+		TitleSnapshotOption,
+		TimeoutSnapshotOption,
+		ProgramOption,
+		ArgsOption,
+		DeferOption,
+		XOption,
+		YOption,
+		WidthOption,
+		HeightOption,
+		ShutdownEventOption,
+		OptionMax
+	};
+
+	static std::wstring optionNames[OptionMax];
+
 	bool help; // help invocation
 
 	std::wstring regex; // title regular expression
@@ -79,6 +80,7 @@ struct CONFIG
 
 	std::wstring crashsnapshot; // path to bitmap to capture
 	std::wstring titlesnapshot;
+	std::wstring timeoutsnapshot;
 
 	// Options if we are running as a debugger
 	std::wstring program; // full path of program to run
@@ -93,12 +95,13 @@ struct CONFIG
 	// spawned processes
 	bool all; 
 
-	// not a user option -- this is how TitleWait works around child process termination issues!
+	// not a user option
+	// (this is how TitleWait works around child process termination issues!)
 	HANDLE shutdownevent;
 
 public:
 	// Default values.
-	CONFIG () :
+	TitleWaitConfig () :
 		help (false),
 		close (false),
 		verbose (true),
@@ -106,6 +109,7 @@ public:
 		timeout (0),
 		crashsnapshot (),
 		titlesnapshot (),
+		timeoutsnapshot (),
 		defer (false),
 		x (CW_USEDEFAULT),
 		y (CW_USEDEFAULT),
@@ -117,11 +121,11 @@ public:
 
 	bool ProcessCommandLineArgs(int numberOfArgs, LPWSTR commandLineArgs[]);
 
-	bool shouldRepositionWindow() const {
+	bool shouldMoveWindow() const {
 		return (x != CW_USEDEFAULT) or (y != CW_USEDEFAULT)
 			or (width != CW_USEDEFAULT) or (height != CW_USEDEFAULT);
 	}
 };
 
-extern const CONFIG & config;
-extern CONFIG configWritable;
+extern TitleWaitConfig const & config;
+extern TitleWaitConfig configWritable;

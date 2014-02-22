@@ -3,7 +3,7 @@
 // Copyright (c) 2008 HostileFork.com
 //
 // This file is part of TitleWait
-// See http://hostilefork.com/titlewait/
+// See http://titlewait.hostilefork.com
 //
 // TitleWait is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -25,31 +25,31 @@
 // numbers; so keep them invariant, and retire or add numbers as
 // new conditions arise.
 //
-enum MAINRETURN {
+enum MainReturn {
 	// Everything was fine
-	mainReturnSuccess = 0,
+	ReturnSuccess = 0,
 
 	// Generic internal error in TitleWait
-	mainReturnInternalError = 1,
+	ReturnInternalError = 1,
 
 	// User invoked with bad command line arguments
-	mainReturnBadArguments = 2,
+	ReturnBadArguments = 2,
 
 	// User didn't supply a program to run
-	mainReturnNoProgram = 3,
+	ReturnNoProgram = 3,
 
 	// a timeout was given and we terminated abnormally
-	mainReturnTimedOut = 4,
+	ReturnTimedOut = 4,
 
 	// for some reason, our attempt to close via SC_CLOSE failed
-	mainReturnWindowDidntClose = 5,
+	ReturnWindowDidntClose = 5,
 
 	// the spawned process crashed
-	mainReturnRunCrashed = 6,
+	ReturnRunCrashed = 6,
 
 	// the spawned process closed itself
-	mainReturnRunClosed = 7,
+	ReturnRunClosed = 7,
 
 	// canceled because user didn't want to wait for previous instance
-	mainReturnDeferCancel = 8
+	ReturnDeferCancel = 8
 };

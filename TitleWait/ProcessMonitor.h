@@ -3,7 +3,7 @@
 // Copyright (c) 2008 HostileFork.com
 //
 // This file is part of TitleWait
-// See http://hostilefork.com/titlewait/
+// See http://titlewait.hostilefork.com
 //
 // TitleWait is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -25,6 +25,6 @@ extern HANDLE lastProcessExitedEvent;
 extern HANDLE processListMutex;
 extern int numProcesses;
 extern DWORD processIds[MAX_PATH];
-extern HANDLE processMonitorThreads[MAX_PATH];
+extern HANDLE processMonThreads[MAX_PATH];
 
 DWORD WINAPI ProcessMonitorMain( LPVOID lpParam );

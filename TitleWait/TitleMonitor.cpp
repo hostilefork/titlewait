@@ -3,7 +3,7 @@
 // Copyright (c) 2008 HostileFork.com
 //
 // This file is part of TitleWait
-// See http://hostilefork.com/titlewait/
+// See http://titlewait.hostilefork.com
 //
 // TitleWait is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -25,7 +25,7 @@
 #include "HelperFunctions.h"
 #include "TitleMonitor.h"
 #include "CaptureEx.h"
-#include "ProgramOptions.h"
+#include "TitleWaitConfig.h"
 #include "ProcessMonitor.h"
 
 bool movedWindow = false;
@@ -42,11 +42,16 @@ BOOL CALLBACK EnumTopLevelDesktopWindowsProc(HWND topLevelWindow, LPARAM lparam)
 	if (!config.all) {
 
 		DWORD windowProcessId;
-		DWORD windowThreadId = GetWindowThreadProcessId(topLevelWindow, &windowProcessId);
-		WindowsVerify(L"GetWindowThreadProcessId", windowThreadId != 0 and windowProcessId != 0);
+		DWORD windowThreadId = GetWindowThreadProcessId(
+			topLevelWindow,
+			&windowProcessId
+		);
+		WindowsVerify(L"GetWindowThreadProcessId",
+			windowThreadId != 0 and windowProcessId != 0
+		);
 
 		BOOL windowIsInSpawnedProcess = false;
-		CodeBlock() {
+		{
 			if (WaitForSingleObject(processListMutex, INFINITE) != WAIT_OBJECT_0)
 				WindowsVerify(L"WaitForSingleObject", FALSE);
 			for (int index = 0; index < numProcesses; index++)
@@ -62,20 +67,28 @@ BOOL CALLBACK EnumTopLevelDesktopWindowsProc(HWND topLevelWindow, LPARAM lparam)
 
 		// Move window in running process
 		// Not sure if this is the best place to put this.  Maybe its own thread?
-		if (config.shouldRepositionWindow() and !movedWindow) {
+		if (config.shouldMoveWindow() and !movedWindow) {
 
 			if ((gwlStyle & (WS_POPUP | WS_CHILD)) == WS_OVERLAPPED) {
 				
-				// Note: SetWindowPos does not work cross process reliably, SetWindowPlacement does.
+				// Note: SetWindowPos does not work cross process reliably
+				// SetWindowPlacement appears to work, however
 				if (config.verbose) {
 					TCHAR windowClassName[MAX_PATH];
-					int childWindowClassNameLength = GetClassName(topLevelWindow, windowClassName, MAX_PATH);
-					debugInfo(L"Sending SetWindowPlacement to window with handle 0x%x and class s\n", topLevelWindow, windowClassName);
+					int childWindowClassNameLength =
+						GetClassName(topLevelWindow, windowClassName, MAX_PATH);
+					debugInfo(
+						L"SetWindowPlacement => handle 0x%x with class %s\n",
+						topLevelWindow,
+						windowClassName
+					);
 				}
 
-				CodeBlock() {
+				{
 					WINDOWPLACEMENT windowPlacement;
-					WindowsVerify(L"GetWindowPlacement", GetWindowPlacement(topLevelWindow, &windowPlacement));
+					WindowsVerify(L"GetWindowPlacement",
+						GetWindowPlacement(topLevelWindow, &windowPlacement)
+					);
 					if (config.x != CW_USEDEFAULT) {
 						windowPlacement.rcNormalPosition.left = config.x;
 					}
@@ -83,14 +96,18 @@ BOOL CALLBACK EnumTopLevelDesktopWindowsProc(HWND topLevelWindow, LPARAM lparam)
 						windowPlacement.rcNormalPosition.top = config.y;
 					}
 					if (config.width != CW_USEDEFAULT) {
-						windowPlacement.rcNormalPosition.right = windowPlacement.rcNormalPosition.left + config.width;
+						windowPlacement.rcNormalPosition.right =
+							windowPlacement.rcNormalPosition.left + config.width;
 					}
 					if (config.height != CW_USEDEFAULT) {
-						windowPlacement.rcNormalPosition.bottom = windowPlacement.rcNormalPosition.top + config.height;
+						windowPlacement.rcNormalPosition.bottom =
+							windowPlacement.rcNormalPosition.top + config.height;
 					}
 					windowPlacement.flags = 0;
 					windowPlacement.showCmd = SW_SHOWNA; 
-					WindowsVerify(L"SetWindowPlacement", SetWindowPlacement(topLevelWindow, &windowPlacement));
+					WindowsVerify(L"SetWindowPlacement", SetWindowPlacement(
+						topLevelWindow, &windowPlacement)
+					);
 				
 					movedWindow = true;
 				}
@@ -99,44 +116,71 @@ BOOL CALLBACK EnumTopLevelDesktopWindowsProc(HWND topLevelWindow, LPARAM lparam)
 	}
 
 	// Fetch Window title and look for match
-	// Note: GetWindowText and GetWindowTextLength fails on some kinds of windows, e.g. explorer shells
-	// This despite claims it can be used for getting window titles on other processes, just not controls
-	// Sending the message works around the problem
-	// http://msdn.microsoft.com/en-us/library/ms633520.aspx
-	CodeBlock() {
-		int textLength = (int)SendMessage(topLevelWindow, WM_GETTEXTLENGTH, static_cast<WPARAM>(0), static_cast<LPARAM>(0));
-		LPWSTR titleStringGlobal = (LPWSTR)VirtualAlloc(NULL, static_cast<DWORD>(textLength + 1), MEM_COMMIT, PAGE_READWRITE);
-		SendMessage(topLevelWindow, WM_GETTEXT, static_cast<WPARAM>(textLength + 1), reinterpret_cast<LPARAM>(titleStringGlobal));
-		std::wstring titleString(titleStringGlobal);
-		WindowsVerify(L"VirtualFree", VirtualFree(titleStringGlobal, 0, MEM_RELEASE));
+	//
+	// Note: GetWindowText and GetWindowTextLength fails on some kinds of
+	// windows, e.g. explorer shells.  This is despite claims it can be used
+	// for getting window titles on other processes (just not controls)
+	// Sending the message works around the problem:
+	//
+	//    http://msdn.microsoft.com/en-us/library/ms633520.aspx
+	{
+		int textLength = (int)SendMessage(
+			topLevelWindow,
+			WM_GETTEXTLENGTH,
+			static_cast<WPARAM>(0),
+			static_cast<LPARAM>(0)
+		);
+		LPWSTR titleGlobal = (LPWSTR)VirtualAlloc(
+			NULL, static_cast<DWORD>(textLength + 1),
+			MEM_COMMIT,
+			PAGE_READWRITE
+		);
+		SendMessage(
+			topLevelWindow,
+			WM_GETTEXT,
+			static_cast<WPARAM>(textLength + 1),
+			reinterpret_cast<LPARAM>(titleGlobal)
+		);
+		std::wstring title(titleGlobal);
+		WindowsVerify(L"VirtualFree", VirtualFree(
+			titleGlobal,
+			0,
+			MEM_RELEASE
+		));
 
-		InactiveCode()
-			debugInfo(L"Top Level Window (%s)", titleString);
-
-		// Now do the last check, on the title string... the original intent of this overblown program
-		if (!titleString.empty() and !config.regex.empty()) {
+		// Now do the last check, on the title string...
+		// the original intent of this overblown program
+		if (!title.empty() and !config.regex.empty()) {
 			std::wsmatch what;
-			if (std::regex_search(titleString, what, std::wregex(config.regex))) {
+			if (std::regex_search(title, what, std::wregex(config.regex))) {
 				if (config.verbose) {
 					std::wcout << "Title pattern matched:\n";
-					std::wcout << titleString << "\n";
+					std::wcout << title << "\n";
 				}
 
 				if (not config.titlesnapshot.empty()) {
-					CaptureEx captureEx;
-					Verify(L"Screen Capture Failed", captureEx.CaptureWindow(topLevelWindow, 100.0, config.titlesnapshot.c_str(), TRUE));
+					Verify(L"Screen Capture Failed",
+						TakeScreenshotToFile(config.titlesnapshot.c_str())
+					);
 				}
 
 				if (config.close) {
 					debugInfo(
-							L"Sending WM_SYSCOMMAND/SC_CLOSE to window with handle 0x%x and title: %s\n",
+							L"WM_SYSCOMMAND/SC_CLOSE => 0x%x with title: %s\n",
 							topLevelWindow,
-							titleString.c_str()
+							title.c_str()
 						);
 							
 					// This works better than WM_CLOSE... but is it the best?
 					// Should we optionally try and kill the process?
-					WindowsVerify(L"PostMessage", PostMessage(topLevelWindow, WM_SYSCOMMAND, SC_CLOSE, MAKELPARAM(0,0)));
+					WindowsVerify(L"PostMessage", 
+						PostMessage(
+							topLevelWindow,
+							WM_SYSCOMMAND,
+							SC_CLOSE,
+							MAKELPARAM(0,0)
+						)
+					);
 				}
 
 				// End the search...
@@ -152,9 +196,11 @@ BOOL CALLBACK EnumTopLevelDesktopWindowsProc(HWND topLevelWindow, LPARAM lparam)
 	return FALSE;
 }
 
+
 // Timer callback, check titles and move window if applicable
-VOID CALLBACK CheckTitleProc(HWND messageWindow, UINT uMsg, UINT_PTR idEvent, DWORD dwTime)
-{
+VOID CALLBACK CheckTitleProc(
+	HWND messageWindow, UINT uMsg, UINT_PTR idEvent, DWORD dwTime
+) {
 	BOOL continueSearch = EnumWindows(EnumTopLevelDesktopWindowsProc, 0);
 	if (!continueSearch) {
 			WindowsVoid(PostQuitMessage(0));
@@ -162,8 +208,10 @@ VOID CALLBACK CheckTitleProc(HWND messageWindow, UINT uMsg, UINT_PTR idEvent, DW
 	}
 }
 
-// Title Monitor gets its own thread so we can do debug event processing in main thread
-DWORD WINAPI TitleMonitorThreadProc( LPVOID lpParam )
+
+// Title Monitor gets its own thread
+// This way we can do debug event processing in main thread
+DWORD WINAPI TitleMonitorThreadProc(LPVOID lpParam)
 {
 	LPWSTR invisibleWindowTitle = (LPWSTR)lpParam;
 
@@ -185,8 +233,9 @@ DWORD WINAPI TitleMonitorThreadProc( LPVOID lpParam )
 	// Call it before the delay...
 	CheckTitleProc(messageWindow, WM_TIMER, 0, 0);
 
-	CodeBlock() {
-		// Initialize a timer that will be called every N seconds to see if window has title
+	{
+		// Initialize a timer that will be called every N seconds
+		// to see if window has the title regex we are looking for
 		UINT_PTR timerId = SetTimer(
 				messageWindow, // hwnd
 				0, // timer identifier 
@@ -197,14 +246,14 @@ DWORD WINAPI TitleMonitorThreadProc( LPVOID lpParam )
 		// Must dispatch messages in order to get timer notifications
 		MSG msg;
 		while (GetMessage(
-					&msg, // message structure 
-					NULL, // handle to window to receive the message 
-					0, // lowest message to examine 
-					0)) // highest message to examine 
-				{ 
-						TranslateMessage(&msg); // translates virtual-key codes 
-						DispatchMessage(&msg);  // dispatches message to window 
-				} 
+			&msg, // message structure 
+			NULL, // handle to window to receive the message 
+			0, // lowest message to examine 
+			0 // highest message to examine 
+		)) { 
+			TranslateMessage(&msg); // translates virtual-key codes 
+			DispatchMessage(&msg);  // dispatches message to window 
+		} 
 
 		WindowsVerify(L"KillTimer", KillTimer(messageWindow, 0));
 	}
@@ -213,5 +262,7 @@ DWORD WINAPI TitleMonitorThreadProc( LPVOID lpParam )
 
 	debugInfo(L"Terminating title monitor thread");
 
-	return 0; // WaitOnSingleObject for this thread handle will block until value returned
+	// WaitOnSingleObject for this thread handle will block until value returned
+
+	return 0;
 }

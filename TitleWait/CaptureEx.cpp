@@ -1,325 +1,204 @@
-// CaptureEx.cpp: implementation of the CaptureEx class.
-
-// Taken from http://www.codeguru.com/cpp/g-m/gdi/capturingimages/print.php/c11231
-
-// Author: Golan Shahar 1.1.2006
-
-// CodeGuru license policy for submissions: "While we are talking about
-// copyrights, you retain copyright of your article and code, but by
-// submitting it to CodeGuru you give permission to use it in a fair manner
-// and also permit all developers to freely use the code in their own
-// applications -- even if they are commercial."
-
-#include <cstdio>
 #include "HelperFunctions.h"
+
 #include "CaptureEx.h"
 
-CaptureEx::CaptureEx()
+
+//
+// From http://lars.werner.no/?p=627
+//
+HBITMAP ScreenShot(HWND hParent, int x, int y, int nWidth, int nHeight)	
 {
-	m_pLastImage = 0;
-	m_Width = 0;
-	m_Height = 0;
-	m_Bpp = 0;
+	// Get a DC from the parent window
+	HDC hDC = GetDC(hParent);
+
+	// Create a memory DC to store the picture to
+	HDC hMemDC = CreateCompatibleDC(hDC);
+
+	// Create the actual picture
+	HBITMAP hBackground = CreateCompatibleBitmap(hDC, nWidth, nHeight );
+
+	// Select the object and store what we got back
+	HBITMAP hOld = (HBITMAP)SelectObject(hMemDC, hBackground);
+
+	// Actually paint into the MemDC (result will be in the selected object)
+	// Note: We ask to return on 0,0,Width,Height and take a blit from x,y
+	BitBlt(hMemDC, 0, 0, nWidth, nHeight, hDC, x, y, SRCCOPY);
+
+	// Restore the old bitmap (if any)
+	SelectObject(hMemDC, hOld);
+
+	// Release the DCs we created
+	ReleaseDC(hParent, hMemDC);
+	ReleaseDC(hParent, hDC);
+
+	// Return the picture (not a clean method, but you get the drill)
+	return hBackground;	
 }
 
-CaptureEx::~CaptureEx()
-{
-	if (m_pLastImage)
-	{
-		delete[] m_pLastImage;
-		m_pLastImage = 0;
-	}
+
+//
+// From http://msdn.microsoft.com/en-us/library/windows/desktop/dd145119(v=vs.85).aspx
+//
+PBITMAPINFO CreateBitmapInfoStruct(HWND hwnd, HBITMAP hBmp)
+{ 
+    BITMAP bmp; 
+    PBITMAPINFO pbmi; 
+    WORD    cClrBits; 
+
+    // Retrieve the bitmap color format, width, and height.  
+    Verify(L"GetObject",GetObject(hBmp, sizeof(BITMAP), (LPSTR)&bmp));
+
+    // Convert the color format to a count of bits.  
+    cClrBits = (WORD)(bmp.bmPlanes * bmp.bmBitsPixel); 
+    if (cClrBits == 1) 
+        cClrBits = 1; 
+    else if (cClrBits <= 4) 
+        cClrBits = 4; 
+    else if (cClrBits <= 8) 
+        cClrBits = 8; 
+    else if (cClrBits <= 16) 
+        cClrBits = 16; 
+    else if (cClrBits <= 24) 
+        cClrBits = 24; 
+    else cClrBits = 32; 
+
+    // Allocate memory for the BITMAPINFO structure. (This structure  
+    // contains a BITMAPINFOHEADER structure and an array of RGBQUAD  
+    // data structures.)  
+
+     if (cClrBits < 24) {
+         pbmi = (PBITMAPINFO) LocalAlloc(LPTR, 
+                    sizeof(BITMAPINFOHEADER) + 
+                    sizeof(RGBQUAD) * (1<< cClrBits)); 
+     } else {
+        // There is no RGBQUAD array for these formats: 
+        // 24-bit-per-pixel or 32-bit-per-pixel 
+ 
+        pbmi = (PBITMAPINFO) LocalAlloc(LPTR, sizeof(BITMAPINFOHEADER)); 
+    }
+
+    // Initialize the fields in the BITMAPINFO structure.  
+
+    pbmi->bmiHeader.biSize = sizeof(BITMAPINFOHEADER); 
+    pbmi->bmiHeader.biWidth = bmp.bmWidth; 
+    pbmi->bmiHeader.biHeight = bmp.bmHeight; 
+    pbmi->bmiHeader.biPlanes = bmp.bmPlanes; 
+    pbmi->bmiHeader.biBitCount = bmp.bmBitsPixel; 
+    if (cClrBits < 24) 
+        pbmi->bmiHeader.biClrUsed = (1<<cClrBits); 
+
+    // If the bitmap is not compressed, set the BI_RGB flag.  
+    pbmi->bmiHeader.biCompression = BI_RGB; 
+
+    // Compute the number of bytes in the array of color  
+    // indices and store the result in biSizeImage.  
+    // The width must be DWORD aligned unless the bitmap is RLE 
+    // compressed. 
+    pbmi->bmiHeader.biSizeImage =
+        ((pbmi->bmiHeader.biWidth * cClrBits +31) & ~31) /8
+        * pbmi->bmiHeader.biHeight;
+
+    // Set biClrImportant to 0, indicating that all of the  
+    // device colors are important.  
+    pbmi->bmiHeader.biClrImportant = 0; 
+    return pbmi; 
+ } 
+
+
+//
+// From http://msdn.microsoft.com/en-us/library/windows/desktop/dd145119(v=vs.85).aspx
+//
+void CreateBMPFile(
+    HWND hwnd, WCHAR const * pszFile, PBITMAPINFO pbi, HBITMAP hBMP, HDC hDC
+) { 
+    HANDLE hf;                 // file handle  
+    BITMAPFILEHEADER hdr;       // bitmap file-header  
+    PBITMAPINFOHEADER pbih;     // bitmap info-header  
+    LPBYTE lpBits;              // memory pointer  
+    DWORD dwTotal;              // total count of bytes  
+    DWORD cb;                   // incremental count of bytes  
+    BYTE *hp;                   // byte pointer  
+    DWORD dwTmp; 
+
+    pbih = (PBITMAPINFOHEADER) pbi; 
+    lpBits = (LPBYTE) GlobalAlloc(GMEM_FIXED, pbih->biSizeImage);
+
+    Verify(L"GlobalAlloc", lpBits != NULL);
+
+    // Retrieve the color table (RGBQUAD array) and the bits  
+    // (array of palette indices) from the DIB.  
+    Verify(L"GetDIBits", GetDIBits(
+        hDC, hBMP, 0, (WORD) pbih->biHeight, lpBits, pbi, DIB_RGB_COLORS)
+    );
+
+    // Create the .BMP file.  
+    hf = CreateFile(pszFile, 
+                   GENERIC_READ | GENERIC_WRITE, 
+                   (DWORD) 0, 
+                    NULL, 
+                   CREATE_ALWAYS, 
+                   FILE_ATTRIBUTE_NORMAL, 
+                   (HANDLE) NULL); 
+    Verify(L"CreateFile", hf != INVALID_HANDLE_VALUE);
+
+    hdr.bfType = 0x4d42;        // 0x42 = "B" 0x4d = "M"  
+    // Compute the size of the entire file.  
+    hdr.bfSize = (DWORD) (sizeof(BITMAPFILEHEADER) + 
+                 pbih->biSize + pbih->biClrUsed 
+                 * sizeof(RGBQUAD) + pbih->biSizeImage); 
+    hdr.bfReserved1 = 0; 
+    hdr.bfReserved2 = 0; 
+
+    // Compute the offset to the array of color indices.  
+    hdr.bfOffBits = (DWORD) sizeof(BITMAPFILEHEADER) + 
+                    pbih->biSize + pbih->biClrUsed 
+                    * sizeof (RGBQUAD); 
+
+    // Copy the BITMAPFILEHEADER into the .BMP file.  
+    Verify(L"WriteFile", WriteFile(hf, (LPVOID) &hdr, sizeof(BITMAPFILEHEADER), 
+        (LPDWORD) &dwTmp,  NULL));
+
+    // Copy the BITMAPINFOHEADER and RGBQUAD array into the file.  
+    Verify(L"WriteFile", WriteFile(hf, (LPVOID) pbih, sizeof(BITMAPINFOHEADER) 
+                  + pbih->biClrUsed * sizeof (RGBQUAD), 
+                  (LPDWORD) &dwTmp, ( NULL)));
+
+    // Copy the array of color indices into the .BMP file.  
+    dwTotal = cb = pbih->biSizeImage; 
+    hp = lpBits; 
+    Verify(L"WriteFile", 
+        WriteFile(hf, (LPSTR) hp, (int) cb, (LPDWORD) &dwTmp,NULL)
+    );
+
+    // Close the .BMP file.  
+     Verify(L"CloseHandle", CloseHandle(hf));
+
+    // Free memory.  
+    GlobalFree((HGLOBAL)lpBits);
 }
 
-void CaptureEx::SaveBmpToFile(
-	LPCWSTR szFileName,
-	int W,
-	int H,
-	int Bpp,
-	int* lpBits)
-{
-	BITMAPINFO Bmi = {0};
-	Bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
-	Bmi.bmiHeader.biWidth = W;
-	Bmi.bmiHeader.biHeight = H;
-	Bmi.bmiHeader.biPlanes = 1;
-	Bmi.bmiHeader.biBitCount = Bpp; 
-	Bmi.bmiHeader.biCompression = BI_RGB;
-	Bmi.bmiHeader.biSizeImage = W * H * Bpp / 8; 
 
-	FILE* fp = _wfopen(szFileName, L"wb");
-	if(fp ==0)
-		return;
-	int h = Bmi.bmiHeader.biHeight;
-	int w = Bmi.bmiHeader.biWidth;
-	Bmi.bmiHeader.biHeight = -h;
-	Bmi.bmiHeader.biWidth = w;
-
-	BITMAPFILEHEADER bfh = {0};
-	bfh.bfType = ('M' << 8) + 'B'; 
-	bfh.bfOffBits = sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER); 
-	bfh.bfSize = Bmi.bmiHeader.biSizeImage + bfh.bfOffBits; 
-   
-	fwrite(&bfh, sizeof(bfh), 1, fp);
-	fwrite(&Bmi.bmiHeader, sizeof(BITMAPINFOHEADER), 1, fp);
-	fwrite(lpBits,Bmi.bmiHeader.biSizeImage, 1, fp);
-	fclose(fp);
-}
-
-void CaptureEx::Get24BitBmp(
-	const int &nWidth,
-	const int &nHeight,
-	const HBITMAP &hBitmap,
-	BYTE *lpDesBits)
-{
-	HDC hDC = ::GetDC(0);
-
-	HDC memDC1 = ::CreateCompatibleDC(hDC);
-	HDC memDC2 = ::CreateCompatibleDC(hDC);
-
-	BYTE *lpBits = NULL;
-
-	BITMAPINFO bmi;
-	::ZeroMemory(&bmi, sizeof(BITMAPINFO));
-	bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
-	bmi.bmiHeader.biWidth = nWidth;
-	bmi.bmiHeader.biHeight = nHeight;
-	bmi.bmiHeader.biPlanes = 1;
-	bmi.bmiHeader.biBitCount = 24;
-	bmi.bmiHeader.biCompression = BI_RGB;
-
-	HBITMAP hDIBMemBM =
-		::CreateDIBSection(
-			0, &bmi, DIB_RGB_COLORS, (void**)&lpBits, NULL, NULL
-		);
-	
-	HBITMAP hOldBmp1 = (HBITMAP)::SelectObject(memDC1, hDIBMemBM);
-
-	HBITMAP hOldBmp2 = (HBITMAP)::SelectObject(memDC2, hBitmap);
-
-	::BitBlt(memDC1, 0, 0, nWidth, nHeight, memDC2, 0, 0, SRCCOPY);
-
-	for (int i = 0 ; i < nHeight; i++)
-		::CopyMemory(
-			&lpDesBits[i * 3 *nWidth],
-			&lpBits[ nWidth * 3 * (nHeight - 1 - i)],
-			nWidth * 3);
-
-	// clean up
-	::SelectObject(memDC1, hOldBmp1);
-	::SelectObject(memDC2, hOldBmp2);
-	::ReleaseDC(0, hDC);
-	::DeleteObject(hDIBMemBM);
-	::DeleteObject(hOldBmp1);
-	::DeleteObject(hOldBmp2);
-	::DeleteDC(memDC1);
-	::DeleteDC(memDC2);
-}
-
-BOOL CaptureEx::CaptureWindow(
-	HWND hWndSrc,
-	double fPreviewRatio,
-	LPCWSTR lpszFileName,
-	BOOL bSaveToFile)
-{
-	RECT rc = {0};
-	::GetWindowRect(hWndSrc,&rc);
-	int Width	= rc.right - rc.left;
-	int Height	= rc.bottom - rc.top;
-	Width		= (Width / 4) * 4;
-
-	HDC		hdc		= ::GetDC(0);
-	HDC		memDC	= ::CreateCompatibleDC(hdc);
-	HBITMAP memBM	= ::CreateCompatibleBitmap(hdc, Width, Height);
-	HBITMAP hOld	= (HBITMAP)::SelectObject(memDC, memBM);
-
-	int Bpp = ::GetDeviceCaps(hdc,BITSPIXEL);
-	int size = (Bpp/8) * (Width * Height);
-    BYTE *lpBits1 = new BYTE[size];    
-    BYTE *lpBits2 = new BYTE[Width * Height*3];    
-    BYTE *lpBits3 = new BYTE[Width * Height*3];    
-
-	BOOL Ret = TRUE;
-	HBITMAP hBmp = 0;
-	int MinBlackPixels = Width * Height * 10;
-	int Count = 0;
-	int Size24 = Width * Height * 3;
-	while (Count < 5)
-	{
-		Ret = Capture(hWndSrc, memDC);
-		::GetBitmapBits(memBM, size, lpBits1);    
-		hBmp = ::CreateBitmap(Width, Height, 1, Bpp, lpBits1);
-		Get24BitBmp(Width, Height, hBmp, lpBits2);
-		int BlackPixels = 0;
-		for (int i = 0; i < Size24; i += 3)
-		{
-			if (lpBits2[i+2]==0 and lpBits2[i+1]==0 and lpBits2[i+0] == 0)
-				BlackPixels++;
-		}
-
-		if (BlackPixels < MinBlackPixels)
-		{
-			MinBlackPixels = BlackPixels;
-			::memcpy(lpBits3, lpBits2, Size24);
-			Count=0;
-		}
-		Count++;
-		::DeleteObject(hBmp);
-	}
-	::memcpy(lpBits2, lpBits3, Size24);
-
-	UpdateLastImage(Width, Height, Size24, 24, lpBits2);
-
-	if (bSaveToFile)
-		SaveBmpToFile(lpszFileName, Width, Height, 24, (int*)lpBits2);
-
-	delete[] lpBits1;
-	delete[] lpBits2;
-	delete[] lpBits3;
-	::SelectObject(memDC, hOld);
-	::DeleteObject(memBM);
-	::DeleteObject(hBmp);
-	::DeleteDC(memDC);
-	::ReleaseDC(0, hdc);   
-
-	return Ret;
-}
-
-void CaptureEx::CaptureDesktop(
-	double fPreviewRatio,
-	LPCWSTR lpszFileName,
-	BOOL bSaveToFile)
-{
+//
+// Simple invocation of the mixture of the above routines to get a screenshot
+//
+// Downside: Just a BMP.
+// Upside: No dependencies on GDI+ or any libraries
+//
+BOOL TakeScreenshotToFile(WCHAR const * pszFile) {
+	HWND hwndDesktop = GetDesktopWindow();
 	RECT rc;
-	HWND hWnd = ::GetDesktopWindow();
-	::GetWindowRect(hWnd, &rc); 
+	GetWindowRect(hwndDesktop, &rc);
 
-	int Width = rc.right - rc.left;
-	int Height = rc.bottom - rc.top;
+	HDC hdc = GetDC(hwndDesktop);
+	HBITMAP hbitmap = ScreenShot(
+        hwndDesktop, rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top
+    );
+	PBITMAPINFO pbitmapinfo = CreateBitmapInfoStruct(hwndDesktop, hbitmap);
+	CreateBMPFile(hwndDesktop, pszFile, pbitmapinfo, hbitmap, hdc);
+	ReleaseDC(hwndDesktop, hdc);
+	DeleteObject(hbitmap);
+	LocalFree(pbitmapinfo);
 
-	HDC hDC = ::GetDC(0);
-	HDC memDC = ::CreateCompatibleDC(hDC);
-	HBITMAP memBM = ::CreateCompatibleBitmap(hDC, Width, Height);
-	HBITMAP OldBM = (HBITMAP)::SelectObject(memDC, memBM);
-	::BitBlt(memDC, 0, 0, Width, Height, hDC, rc.left, rc.top, SRCCOPY);
-
-	int Bpp	= ::GetDeviceCaps(hDC,BITSPIXEL);
-	int size = Bpp/8 * (Width * Height);
-	BYTE *lpBits1 = new BYTE[size];
-	::GetBitmapBits(memBM, size, lpBits1);
-
-	HBITMAP hBmp = ::CreateBitmap(Width, Height, 1, Bpp, lpBits1);
-
-    BYTE *lpBits2 = new BYTE[Width * Height * 3];    
-
-	Get24BitBmp(Width, Height, hBmp, lpBits2);
-
-	UpdateLastImage( Width, Height,Width * Height*3, 24, lpBits2);
-
-
-	if (bSaveToFile)
-		SaveBmpToFile(lpszFileName, Width, Height, 24, (int*)lpBits2);
-
-	delete[] lpBits1;
-	delete[] lpBits2;
-	::SelectObject(hDC, OldBM);
-	::DeleteObject(memBM);
-	::DeleteObject(hBmp);
-	::DeleteDC(memDC);
-	::ReleaseDC(0, hDC);
-}
-
-void CaptureEx::StretchDIBitsToHwnd(
-	HWND hWnd,
-	double fRatio,
-	int Width,
-	int Height,
-	int Bpp,
-	BYTE *lpBits)
-{
-	HDC hDC = ::GetDC(hWnd);
-	BITMAPINFO bmp = {0};
-    bmp.bmiHeader.biSize = sizeof(BITMAPINFO);
-    bmp.bmiHeader.biWidth = Width;
-    bmp.bmiHeader.biHeight = -Height;
-    bmp.bmiHeader.biPlanes = 1;
-    bmp.bmiHeader.biBitCount = Bpp;
-    bmp.bmiHeader.biCompression = BI_RGB;
-    bmp.bmiHeader.biSizeImage =
-		(bmp.bmiHeader.biWidth * bmp.bmiHeader.biHeight * Bpp /8);
-
-	double fScaleWidth	= Width * fRatio;
-	double fScaleHeight	= Height * fRatio;
-
-	::SetWindowPos(
-		hWnd,
-		0, // hwndInsertAfter
-		0, 0,
-		(int)fScaleWidth, (int)fScaleHeight,
-		SWP_NOMOVE | SWP_NOZORDER
-	);
-	::StretchDIBits(
-		hDC,
-		0, 0, (int)fScaleWidth, (int)fScaleHeight,
-		0, 0, Width, Height,
-		lpBits, &bmp, DIB_RGB_COLORS, SRCCOPY
-	);	
-
-	::ReleaseDC(hWnd,hDC);
-}
-
-BOOL CaptureEx::Capture(HWND hwnd, HDC memDC)
-{
-	typedef BOOL (WINAPI *tPrintWindow)(HWND, HDC, UINT);
-
-    tPrintWindow pPrintWindow = 0;
-    HINSTANCE handle = ::LoadLibrary(L"User32.dll");
-    if ( handle == 0 ) 
-		return FALSE;
-
-	pPrintWindow = (tPrintWindow)::GetProcAddress(handle, "PrintWindow");     
-    int Ret = TRUE;
-	if (pPrintWindow) 
-		Ret = pPrintWindow(hwnd, memDC,0 );
-	else
-	{
-		debugInfo(L"cant gain address of PrintWindow(..) api\nplease update your sdk");
-		Ret = FALSE;
-	}
-	::FreeLibrary(handle);
-	return (Ret? TRUE : FALSE);
-}
-
-void CaptureEx::UpdateLastImage(
-	int Width,
-	int Height,
-	int Size,
-	int Bpp,
-	BYTE* lpBits)
-{
-	if (m_pLastImage)
-	{
-		delete[] m_pLastImage;
-		m_pLastImage = 0;
-	}
-
-	if (m_pLastImage == 0) // first time
-		m_pLastImage = new BYTE[Size];
-
-	memcpy(m_pLastImage, lpBits, Size);
-	m_Width	= Width;
-	m_Height = Height;
-	m_Bpp = Bpp;
-}
-
-void CaptureEx::DisplayLastImage(HWND hWnd, double fRatio)
-{
-	if (m_pLastImage)
-		StretchDIBitsToHwnd(hWnd, fRatio, m_Width, m_Height, m_Bpp, m_pLastImage);
-}
-
-void CaptureEx::SaveLastCaptured(LPCWSTR szFileName)
-{
-	if (m_pLastImage)
-		SaveBmpToFile(szFileName, m_Width, m_Height, m_Bpp, (int*)m_pLastImage);
+    // For now, assume if any of the above failed it would terminate program
+	return TRUE;
 }

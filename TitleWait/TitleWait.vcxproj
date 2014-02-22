@@ -71,8 +71,8 @@
     <ClCompile Include="TitleWait.cpp" />
     <ClCompile Include="NTProcessInfo.cpp" />
     <ClCompile Include="ProcessMonitor.cpp" />
-    <ClCompile Include="ProgramOptions.cpp" />
     <ClCompile Include="TitleMonitor.cpp" />
+    <ClCompile Include="TitleWaitConfig.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

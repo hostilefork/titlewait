@@ -1,6 +1,6 @@
 <html>
 	<head>
-		<title>My Complicated Page</title>
+		<title>Running Setup Code...</title>
 		<script type="text/javascript">
 			var htmlMessages = [
 				'Building a complex page...',
@@ -17,6 +17,7 @@
 				// this is where the user
 				// can start poking
 				// at the controls
+        document.title = "My Complicated Page"
 			};
 
 			var NextMessage = function() {
@@ -25,6 +26,7 @@
 				if (messageIndex < htmlMessages.length) {
 					setTimeout(NextMessage, 3000);
 				} else {
+          !Hostilefork was here!!!
 					PageConstructionFinished();
 				}
 

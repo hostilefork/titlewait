@@ -3,7 +3,7 @@
 // Copyright (c) 2008 HostileFork.com
 //
 // This file is part of TitleWait
-// See http://hostilefork.com/titlewait/
+// See http://titlewait.hostilefork.com
 //
 // TitleWait is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -21,15 +21,19 @@
 
 #include "ProcessMonitor.h"
 #include "HelperFunctions.h"
-#include "ProgramOptions.h"
+#include "TitleWaitConfig.h"
 
 HANDLE lastProcessExitedEvent = NULL;
 HANDLE processListMutex = NULL;
 int numProcesses = 0;
 DWORD processIds[MAX_PATH];
-// Using approach from Code Project: wait INFINITE on spawned processes with a spawned thread...
-// http://www.codeproject.com/KB/threads/asyncprocnotify.aspx
-HANDLE processMonitorThreads[MAX_PATH];
+
+// Using approach from Code Project:
+// wait INFINITE on spawned processes with a spawned thread...
+//
+//     http://www.codeproject.com/KB/threads/asyncprocnotify.aspx
+HANDLE processMonThreads[MAX_PATH];
+
 
 DWORD WINAPI ProcessMonitorMain( LPVOID lpParam ) {
 	HANDLE processHandle = lpParam;
@@ -53,15 +57,24 @@ DWORD WINAPI ProcessMonitorMain( LPVOID lpParam ) {
 				numProcesses--;
 			else {
 				processIds[index] = processIds[numProcesses-1];
-				processMonitorThreads[index] = processMonitorThreads[numProcesses-1];
+				processMonThreads[index] = processMonThreads[numProcesses-1];
 				numProcesses--;
 			}
 
-			if (numProcesses == 1) { // down to just the nested guy (another titlewait)...when he dies, the debugger finally dies...
-
-				debugInfo(L"Last Child Process Exited\n", GetProcessId(processHandle));
+			if (numProcesses == 1) {
+				// down to just the nested guy (another titlewait)...
+				// when he dies, the debugger finally dies...
+				
+				debugInfo(
+					L"Last Child Process Exited, id 0x%x",
+					GetProcessId(processHandle)
+				);
 				WindowsVerify(L"SetEvent", SetEvent(lastProcessExitedEvent));
-				debugInfo(L"We don't have to finish the nested executive gracefully, though I always like graceful solutions.  Can I figure out how to signal back to the inherited handles?  Well, for now we just kill it.");
+
+				// We don't have to finish the nested executive gracefully,
+				// though I always like graceful solutions.  Can I figure out
+				// how to signal back to the inherited handles?
+				debugInfo(L"Killing nested executive with ExitProcess.");
 				ExitProcess(1);
 			}
 			WindowsVerify(L"ReleaseMutex", ReleaseMutex(processListMutex));
