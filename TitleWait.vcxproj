@@ -55,24 +55,24 @@
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="CaptureEx.h" />
-    <ClInclude Include="DebugLoop.h" />
-    <ClInclude Include="HelperFunctions.h" />
-    <ClInclude Include="NTProcessInfo.h" />
-    <ClInclude Include="ProcessMonitor.h" />
-    <ClInclude Include="ProgramOptions.h" />
-    <ClInclude Include="TitleMonitor.h" />
-    <ClInclude Include="TitleWait.h" />
+    <ClInclude Include="src\CaptureEx.h" />
+    <ClInclude Include="src\DebugLoop.h" />
+    <ClInclude Include="src\HelperFunctions.h" />
+    <ClInclude Include="src\NTProcessInfo.h" />
+    <ClInclude Include="src\ProcessMonitor.h" />
+    <ClInclude Include="src\TitleMonitor.h" />
+    <ClInclude Include="src\TitleWait.h" />
+    <ClInclude Include="src\TitleWaitConfig.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="CaptureEx.cpp" />
-    <ClCompile Include="DebugLoop.cpp" />
-    <ClCompile Include="HelperFunctions.cpp" />
-    <ClCompile Include="TitleWait.cpp" />
-    <ClCompile Include="NTProcessInfo.cpp" />
-    <ClCompile Include="ProcessMonitor.cpp" />
-    <ClCompile Include="TitleMonitor.cpp" />
-    <ClCompile Include="TitleWaitConfig.cpp" />
+    <ClCompile Include="src\CaptureEx.cpp" />
+    <ClCompile Include="src\DebugLoop.cpp" />
+    <ClCompile Include="src\HelperFunctions.cpp" />
+    <ClCompile Include="src\NTProcessInfo.cpp" />
+    <ClCompile Include="src\ProcessMonitor.cpp" />
+    <ClCompile Include="src\TitleMonitor.cpp" />
+    <ClCompile Include="src\TitleWait.cpp" />
+    <ClCompile Include="src\TitleWaitConfig.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

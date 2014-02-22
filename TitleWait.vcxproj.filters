@@ -15,54 +15,54 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="TitleMonitor.h">
+    <ClInclude Include="src\TitleWaitConfig.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="CaptureEx.h">
+    <ClInclude Include="src\CaptureEx.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="DebugLoop.h">
+    <ClInclude Include="src\DebugLoop.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="HelperFunctions.h">
+    <ClInclude Include="src\HelperFunctions.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="NTProcessInfo.h">
+    <ClInclude Include="src\NTProcessInfo.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ProcessMonitor.h">
+    <ClInclude Include="src\ProcessMonitor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="TitleWait.h">
+    <ClInclude Include="src\TitleMonitor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ProgramOptions.h">
+    <ClInclude Include="src\TitleWait.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="TitleMonitor.cpp">
+    <ClCompile Include="src\TitleWaitConfig.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="CaptureEx.cpp">
+    <ClCompile Include="src\CaptureEx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="DebugLoop.cpp">
+    <ClCompile Include="src\DebugLoop.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="HelperFunctions.cpp">
+    <ClCompile Include="src\HelperFunctions.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ProcessMonitor.cpp">
+    <ClCompile Include="src\NTProcessInfo.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="NTProcessInfo.cpp">
+    <ClCompile Include="src\ProcessMonitor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="TitleWait.cpp">
+    <ClCompile Include="src\TitleMonitor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="TitleWaitConfig.cpp">
+    <ClCompile Include="src\TitleWait.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
