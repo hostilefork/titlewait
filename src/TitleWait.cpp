@@ -44,7 +44,7 @@ TitleWaitConfig configWritable;
 TitleWaitConfig const * config = &configWritable;
 
 
-TitleWait::MainReturn TitleWait::TitleWaitMain(int numberOfArgs, WCHAR * programArgs[])
+TitleWait::MainReturn TitleWait::doMain()
 {
 	if (config->help) {
 		std::wcout << L"TitleWait (c) 2008 HostileFork.com\n";
@@ -203,34 +203,10 @@ TitleWait::MainReturn TitleWait::TitleWaitMain(int numberOfArgs, WCHAR * program
 
 		std::wstringstream commandLine;
 
-		DWORD moduleNameSize;
-		TCHAR moduleName[MAX_PATH];
-		moduleNameSize = GetModuleFileName(
-			NULL, moduleName, sizeof(moduleName)
-		);
-		Verify(L"GetmoduleName returned string longer than MAX_PATH",
-			moduleNameSize < sizeof(moduleName)
-		);
-
-		commandLine << L'"' << moduleName << L'"';
-
-		for (int argIndex = 1; argIndex < numberOfArgs; argIndex++) {
-			commandLine << L' ';
-
-			// must escape any single quotes with \"
-			for (int index = 0; index < wcslen(programArgs[argIndex]); index++) {
-				if (programArgs[argIndex][index] == L'"') {
-					commandLine << L'\\';
-					commandLine << L'"';
-				} else if (programArgs[argIndex][index] == L'=') {
-					commandLine << L'=';
-					commandLine << L'"';
-				} else {
-					commandLine << programArgs[argIndex][index];
-				}
-			}
-			commandLine << L'"';
-		}
+		// Passing to the constructor seems to not put the insertion position at end
+		// Some documents suggest you could with ios_base::ate, but the
+		// wording is dodgy about being "implementation dependent".  Eh?
+		commandLine << config->RegenerateCommandLine();
 
 		// We'll be running the same command again, only add shutdownevent
 		// Simulate %p by casting to void:

@@ -30,11 +30,11 @@
 // http://stackoverflow.com/a/895894
 int wmain(int numberOfArgs, WCHAR * programArgs[])
 {	
-	TitleWaitConfig & configWritable = *const_cast<TitleWaitConfig *>(config);
+	TitleWaitConfig &configWritable = *const_cast<TitleWaitConfig *>(config);
 	if (!configWritable.ProcessCommandLineArgs(numberOfArgs, programArgs)) {
 		return TitleWait::ReturnBadArguments;
 	}
 
 	TitleWait titlewait;
-	return titlewait.TitleWaitMain(numberOfArgs, programArgs);
+	return titlewait.doMain();
 }

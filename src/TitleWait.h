@@ -65,7 +65,7 @@ public:
 	};
 
 public:
-	MainReturn TitleWaitMain(int numberOfArgs, WCHAR * programArgs[]);
+	MainReturn doMain();
 };
 
 #endif

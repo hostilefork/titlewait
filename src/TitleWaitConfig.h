@@ -103,6 +103,9 @@ struct TitleWaitConfig
 	// (this is how TitleWait works around child process termination issues!)
 	HANDLE shutdownevent;
 
+	int numberOfArgs;
+	LPWSTR * programArgs;
+
 public:
 	// Default values.
 	TitleWaitConfig () :
@@ -123,7 +126,9 @@ public:
 	{
 	}
 
-	bool ProcessCommandLineArgs(int numberOfArgs, LPWSTR commandLineArgs[]);
+	bool ProcessCommandLineArgs(int numberOfArgs, LPWSTR programArgs[]);
+	
+	std::wstring RegenerateCommandLine() const;
 
 	bool shouldMoveWindow() const {
 		return (x != CW_USEDEFAULT) or (y != CW_USEDEFAULT)

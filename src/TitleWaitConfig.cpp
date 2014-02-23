@@ -106,8 +106,11 @@ bool GetStringOption(
 }
 
 bool TitleWaitConfig::ProcessCommandLineArgs(
-	int numberOfArgs, LPWSTR commandLineArgs[]
+	int numberOfArgs, LPWSTR programArgs[]
 ) {
+	this->numberOfArgs = numberOfArgs;
+	this->programArgs = programArgs;
+
 	bool result = true;
 
 	help = (numberOfArgs <= 1);
@@ -117,7 +120,7 @@ bool TitleWaitConfig::ProcessCommandLineArgs(
 		bool optionMatched = false;
 		bool validValue = true;
 
-		std::wstring arg (commandLineArgs[argIndex]);
+		std::wstring arg (programArgs[argIndex]);
 		for (int optInt = 0; optInt < OptionMax; optInt++) {
 			Option option = static_cast<Option>(optInt);
 
@@ -311,4 +314,41 @@ bool TitleWaitConfig::ProcessCommandLineArgs(
 	debugInfo(L"Done processing command line args for %s", GetCommandLineW());
 
 	return result;
+}
+
+
+std::wstring TitleWaitConfig::RegenerateCommandLine() const
+{
+	std::wstringstream commandLine;
+
+	DWORD moduleNameSize;
+	TCHAR moduleName[MAX_PATH];
+	moduleNameSize = GetModuleFileName(
+		NULL, moduleName, sizeof(moduleName)
+	);
+	Verify(L"GetmoduleName returned string longer than MAX_PATH",
+		moduleNameSize < sizeof(moduleName)
+	);
+
+	commandLine << L'"' << moduleName << L'"';
+
+	for (int argIndex = 1; argIndex < numberOfArgs; argIndex++) {
+		commandLine << L' ';
+
+		// must escape any single quotes with \"
+		for (int index = 0; index < wcslen(programArgs[argIndex]); index++) {
+			if (programArgs[argIndex][index] == L'"') {
+				commandLine << L'\\';
+				commandLine << L'"';
+			} else if (programArgs[argIndex][index] == L'=') {
+				commandLine << L'=';
+				commandLine << L'"';
+			} else {
+				commandLine << programArgs[argIndex][index];
+			}
+		}
+		commandLine << L'"';
+	}
+
+	return commandLine.str();
 }
