@@ -153,7 +153,7 @@ void WindowsErrorToStderr(LPWSTR functionName, DWORD errorCode, UINT lineNumber)
 			formatMessageErrorCode
 		);
 	}
-	ExitProcess(ReturnInternalError);
+	ExitProcess(TitleWait::ReturnInternalError);
 }
 
 
@@ -162,7 +162,7 @@ void ExitProgramOnWindowsError_Core(
 ) {
 	fwprintf(
 		stderr,
-		L"Report issue to https://github.com/hostilefork/titlewait/issues"
+		L"Report issue to https://github.com/hostilefork/titlewait/issues\n"
 	);
 	WindowsErrorToStderr(functionName, errorCode, lineNumber);
 }
@@ -192,12 +192,12 @@ void Verify_Core(LPWSTR msg, BOOL expr, UINT lineNumber) {
 		stderr,
 		L"Report issue to https://github.com/hostilefork/titlewait/issues"
 	);
-	ExitProcess(ReturnInternalError);
+	ExitProcess(TitleWait::ReturnInternalError);
 }
 
 
 int debugInfo(LPWSTR formatString, ...){
-	if (config.verbose) {
+	if (config and config->verbose) {
 		int retval=0;
 		va_list ap;
 
@@ -214,7 +214,7 @@ int debugInfo(LPWSTR formatString, ...){
 
 
 int debugInfoA(char* formatString, ...){
-	if (config.verbose) {
+	if (config and config->verbose) {
 		int retval=0;
 		va_list ap;
 

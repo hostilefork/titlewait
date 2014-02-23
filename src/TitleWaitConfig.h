@@ -130,7 +130,7 @@ public:
 	}
 };
 
-extern TitleWaitConfig const & config;
+extern TitleWaitConfig const * config;
 extern TitleWaitConfig configWritable;
 
 #endif

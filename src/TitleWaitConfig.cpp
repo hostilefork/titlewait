@@ -34,7 +34,7 @@
 TitleWaitConfig configWritable;
 
 // Use this to access the program options if you don't need to change them
-TitleWaitConfig const & config = configWritable;
+TitleWaitConfig const * config = &configWritable;
 
 std::wstring TitleWaitConfig::optionNames[OptionMax] = {
 	L"help",

@@ -22,6 +22,7 @@
 #include <iostream>
 #include <regex>
 
+#include "TitleWait.h"
 #include "HelperFunctions.h"
 #include "TitleMonitor.h"
 #include "Screenshot.h"
@@ -39,7 +40,7 @@ BOOL CALLBACK EnumTopLevelDesktopWindowsProc(HWND topLevelWindow, LPARAM lparam)
 		return TRUE;
 
 	// See if Window is in one of our spawned processes
-	if (!config.all) {
+	if (!config->all) {
 
 		DWORD windowProcessId;
 		DWORD windowThreadId = GetWindowThreadProcessId(
@@ -67,18 +68,18 @@ BOOL CALLBACK EnumTopLevelDesktopWindowsProc(HWND topLevelWindow, LPARAM lparam)
 
 		// Move window in running process
 		// Not sure if this is the best place to put this.  Maybe its own thread?
-		if (config.shouldMoveWindow() and !movedWindow) {
+		if (config->shouldMoveWindow() and !movedWindow) {
 
 			if ((gwlStyle & (WS_POPUP | WS_CHILD)) == WS_OVERLAPPED) {
 				
 				// Note: SetWindowPos does not work cross process reliably
 				// SetWindowPlacement appears to work, however
-				if (config.verbose) {
+				if (config->verbose) {
 					TCHAR windowClassName[MAX_PATH];
 					int childWindowClassNameLength =
 						GetClassName(topLevelWindow, windowClassName, MAX_PATH);
 					debugInfo(
-						L"SetWindowPlacement => handle 0x%x with class %s\n",
+						L"SetWindowPlacement => handle 0x%x with class %s",
 						topLevelWindow,
 						windowClassName
 					);
@@ -89,19 +90,19 @@ BOOL CALLBACK EnumTopLevelDesktopWindowsProc(HWND topLevelWindow, LPARAM lparam)
 					WindowsVerify(L"GetWindowPlacement",
 						GetWindowPlacement(topLevelWindow, &windowPlacement)
 					);
-					if (config.x != CW_USEDEFAULT) {
-						windowPlacement.rcNormalPosition.left = config.x;
+					if (config->x != CW_USEDEFAULT) {
+						windowPlacement.rcNormalPosition.left = config->x;
 					}
-					if (config.y != CW_USEDEFAULT) {
-						windowPlacement.rcNormalPosition.top = config.y;
+					if (config->y != CW_USEDEFAULT) {
+						windowPlacement.rcNormalPosition.top = config->y;
 					}
-					if (config.width != CW_USEDEFAULT) {
+					if (config->width != CW_USEDEFAULT) {
 						windowPlacement.rcNormalPosition.right =
-							windowPlacement.rcNormalPosition.left + config.width;
+							windowPlacement.rcNormalPosition.left + config->width;
 					}
-					if (config.height != CW_USEDEFAULT) {
+					if (config->height != CW_USEDEFAULT) {
 						windowPlacement.rcNormalPosition.bottom =
-							windowPlacement.rcNormalPosition.top + config.height;
+							windowPlacement.rcNormalPosition.top + config->height;
 					}
 					windowPlacement.flags = 0;
 					windowPlacement.showCmd = SW_SHOWNA; 
@@ -150,21 +151,21 @@ BOOL CALLBACK EnumTopLevelDesktopWindowsProc(HWND topLevelWindow, LPARAM lparam)
 
 		// Now do the last check, on the title string...
 		// the original intent of this overblown program
-		if (!title.empty() and !config.regex.empty()) {
+		if (!title.empty() and !config->regex.empty()) {
 			std::wsmatch what;
-			if (std::regex_search(title, what, std::wregex(config.regex))) {
-				if (config.verbose) {
+			if (std::regex_search(title, what, std::wregex(config->regex))) {
+				if (config->verbose) {
 					std::wcout << "Title pattern matched:\n";
 					std::wcout << title << "\n";
 				}
 
-				if (not config.titlesnapshot.empty()) {
+				if (not config->titlesnapshot.empty()) {
 					Verify(L"Screen Capture Failed",
-						TakeScreenshotToFile(config.titlesnapshot.c_str())
+						TakeScreenshotToFile(config->titlesnapshot.c_str())
 					);
 				}
 
-				if (config.close) {
+				if (config->close) {
 					debugInfo(
 							L"WM_SYSCOMMAND/SC_CLOSE => 0x%x with title: %s\n",
 							topLevelWindow,
@@ -239,7 +240,7 @@ DWORD WINAPI TitleMonitorThreadProc(LPVOID lpParam)
 		UINT_PTR timerId = SetTimer(
 				messageWindow, // hwnd
 				0, // timer identifier 
-				config.frequency*1000, // convert seconds to milliseconds 
+				config->frequency*1000, // convert seconds to milliseconds 
 				(TIMERPROC) CheckTitleProc // timer callback
 			);
 		

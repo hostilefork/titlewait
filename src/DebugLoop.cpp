@@ -175,10 +175,10 @@ DWORD WINAPI DebugLoopMain(LPVOID lpParam) // returns a MainReturn
 	DWORD dwCreationFlags =
 #ifdef USE_STARTUPINFO_FOR_WINDOW_POSITION
 			// These options don't work :-(
-			(config.runWindowPosition ? STARTF_USEPOSITION : 0) |
-			(config.runWindowSize ? STARTF_USESIZE : 0) |
+			(config->runWindowPosition ? STARTF_USEPOSITION : 0) |
+			(config->runWindowSize ? STARTF_USESIZE : 0) |
 #endif
-			(config.shutdownevent ? 0 : DEBUG_PROCESS) |
+			(config->shutdownevent ? 0 : DEBUG_PROCESS) |
 			STARTF_USESHOWWINDOW;
 
 	// REVIEW: for security should lpApplicationName be the same as the 
@@ -190,7 +190,7 @@ DWORD WINAPI DebugLoopMain(LPVOID lpParam) // returns a MainReturn
 			&commandLineCopy[0], // lpCommandLine (no .data() in C++98)
 			0, // lpProcessAttributes
 			0, // lpThreadAttributes
-			config.shutdownevent == NULL ? TRUE : FALSE, // bInheritHandles
+			config->shutdownevent == NULL ? TRUE : FALSE, // bInheritHandles
 			dwCreationFlags,
 			0, // lpEnvironment
 			0, // lpCurrentDirectory
@@ -289,12 +289,12 @@ DWORD WINAPI DebugLoopMain(LPVOID lpParam) // returns a MainReturn
 				// Need to take the screenshot here, because if we return from
 				// the DebugLoop the windows will be closed and the state lost
 				// by the time we return to the caller
-				if (not config.timeoutsnapshot.empty()) {
+				if (not config->timeoutsnapshot.empty()) {
 					Verify(L"Screen Capture Failed", 
-						TakeScreenshotToFile(config.timeoutsnapshot.c_str())
+						TakeScreenshotToFile(config->timeoutsnapshot.c_str())
 					);
 				}
-				return ReturnTimedOut;
+				return TitleWait::ReturnTimedOut;
 			}
 		}
 
@@ -316,15 +316,14 @@ DWORD WINAPI DebugLoopMain(LPVOID lpParam) // returns a MainReturn
 
 					debugInfo(L"EXCEPTION_ACCESS_VIOLATION");
 
-					if (not config.crashsnapshot.empty()) {
+					if (not config->crashsnapshot.empty()) {
 						Verify(L"Screen Capture Failed",
-							TakeScreenshotToFile(config.crashsnapshot.c_str())
+							TakeScreenshotToFile(config->crashsnapshot.c_str())
 						);
 					}
 	 				debugInfo(L"Child Process Crashed - Quitting");
-					return ReturnRunCrashed;
-					}
-					break;
+					return TitleWait::ReturnRunCrashed;
+				}
 	 
 				case EXCEPTION_BREAKPOINT: {
 					// First chance: Display the current 
@@ -333,7 +332,7 @@ DWORD WINAPI DebugLoopMain(LPVOID lpParam) // returns a MainReturn
 	
 					// No process functions during CREATE_PROCESS_DEBUG_EVENT
 					// have to wait for a later time
-					if (!config.defer or previouslyWaited or suspendedThread)
+					if (!config->defer or previouslyWaited or suspendedThread)
 						break;
 
 					if (PreviousStillRunning(
@@ -570,5 +569,5 @@ DWORD WINAPI DebugLoopMain(LPVOID lpParam) // returns a MainReturn
 	sm_FreeNTDLLFunctions(ntDllModule);
 
 	// unreachable point
-	return ReturnInternalError;
+	return TitleWait::ReturnInternalError;
 }

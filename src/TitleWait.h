@@ -22,38 +22,48 @@
 #ifndef __TITLEWAIT_TITLEWAIT_H__
 #define __TITLEWAIT_TITLEWAIT_H__
 
-//
-// Possible exit codes for the program.  Callers may depend on these
-// numbers; so keep them invariant, and retire or add numbers as
-// new conditions arise.
-//
-enum MainReturn {
-	// Everything was fine
-	ReturnSuccess = 0,
+#include "windows.h"
 
-	// Generic internal error in TitleWait
-	ReturnInternalError = 1,
 
-	// User invoked with bad command line arguments
-	ReturnBadArguments = 2,
+class TitleWait
+{
+public:
+	//
+	// Possible exit codes for the program.  Callers may depend on these
+	// numbers; so keep them invariant, and retire or add numbers as
+	// new conditions arise.
+	//
+	enum MainReturn {
+		// Everything was fine
+		ReturnSuccess = 0,
 
-	// User didn't supply a program to run
-	ReturnNoProgram = 3,
+		// Generic internal error in TitleWait
+		ReturnInternalError = 1,
 
-	// a timeout was given and we terminated abnormally
-	ReturnTimedOut = 4,
+		// User invoked with bad command line arguments
+		ReturnBadArguments = 2,
 
-	// for some reason, our attempt to close via SC_CLOSE failed
-	ReturnWindowDidntClose = 5,
+		// User didn't supply a program to run
+		ReturnNoProgram = 3,
 
-	// the spawned process crashed
-	ReturnRunCrashed = 6,
+		// a timeout was given and we terminated abnormally
+		ReturnTimedOut = 4,
 
-	// the spawned process closed itself
-	ReturnRunClosed = 7,
+		// for some reason, our attempt to close via SC_CLOSE failed
+		ReturnWindowDidntClose = 5,
 
-	// canceled because user didn't want to wait for previous instance
-	ReturnDeferCancel = 8
+		// the spawned process crashed
+		ReturnRunCrashed = 6,
+
+		// the spawned process closed itself
+		ReturnRunClosed = 7,
+
+		// canceled because user didn't want to wait for previous instance
+		ReturnDeferCancel = 8
+	};
+
+public:
+	MainReturn TitleWaitMain(int numberOfArgs, WCHAR * programArgs[]);
 };
 
 #endif

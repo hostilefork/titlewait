@@ -72,6 +72,7 @@
     <ClCompile Include="src\TitleMonitor.cpp" />
     <ClCompile Include="src\TitleWait.cpp" />
     <ClCompile Include="src\TitleWaitConfig.cpp" />
+    <ClCompile Include="src\wmain.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -34,19 +34,10 @@
 #include "ProcessMonitor.h"
 #include "Screenshot.h"
 
-// No TCHAR legacy, assume WCHAR everywhere...
-// http://stackoverflow.com/a/3002494
 
-
-// Define wmain instead of _tmain, project defines _UNICODE
-// http://stackoverflow.com/a/895894
-int wmain(int numberOfArgs, WCHAR * programArgs[])
-{	
-	if (!configWritable.ProcessCommandLineArgs(numberOfArgs, programArgs)) {
-		return ReturnBadArguments;
-	}
-
-	if (config.help) {
+TitleWait::MainReturn TitleWait::TitleWaitMain(int numberOfArgs, WCHAR * programArgs[])
+{
+	if (config->help) {
 		std::wcout << L"TitleWait (c) 2008 HostileFork.com\n";
 		std::wcout << L"See http://titlewait.hostilefork.com\n\n";
 
@@ -64,7 +55,7 @@ int wmain(int numberOfArgs, WCHAR * programArgs[])
 		return ReturnSuccess;
 	}
 
-	if (config.program.empty()) {
+	if (config->program.empty()) {
 		std::wcerr << L"No program specified via --program.  Nothing to do!\n";
 		return ReturnNoProgram;
 	}
@@ -82,11 +73,11 @@ int wmain(int numberOfArgs, WCHAR * programArgs[])
 
 	MainReturn returnCode = ReturnInternalError;
 	DWORD msecLeft =
-		config.timeout == 0
+		config->timeout == 0
 		? INFINITE
-		: config.timeout * 1000;
+		: config->timeout * 1000;
 
-	if (config.shutdownevent) {
+	if (config->shutdownevent) {
 
 		// NESTED EXECUTIVE
 		//
@@ -112,14 +103,14 @@ int wmain(int numberOfArgs, WCHAR * programArgs[])
 		// http://stackoverflow.com/a/12097772
 		// Use this until a better solution comes along...
 
-		std::string programAscii (config.program.begin(), config.program.end());
+		std::string programAscii (config->program.begin(), config->program.end());
 
 		commandLine << '"';
 		commandLine << programAscii;
 		commandLine << '"';
 		commandLine << ' ';
 
-		std::string argsAscii (config.args.begin(), config.args.end());
+		std::string argsAscii (config->args.begin(), config->args.end());
 
 		commandLine << argsAscii;
 
@@ -182,7 +173,7 @@ int wmain(int numberOfArgs, WCHAR * programArgs[])
 	if (titleMonitorThread == NULL)
 		WindowsVerify(L"CreateThread", FALSE);
 
-	if (!config.program.empty()) {
+	if (!config->program.empty()) {
 
 		// DEBUG LAUNCHER
 		//
@@ -246,7 +237,7 @@ int wmain(int numberOfArgs, WCHAR * programArgs[])
 		ZeroMemory(&startupInfo, sizeof(STARTUPINFO));
 		startupInfo.cb = sizeof(STARTUPINFO);
 
-		startupInfo.wShowWindow = config.shouldMoveWindow() ? SW_HIDE : SW_SHOW;
+		startupInfo.wShowWindow = config->shouldMoveWindow() ? SW_HIDE : SW_SHOW;
 
 #ifdef CREATE_PROCESS_WITH_DESKTOP
 		// Wondered if NULL for lpDesktop was causing problems in the
@@ -312,10 +303,10 @@ int wmain(int numberOfArgs, WCHAR * programArgs[])
 		//
 		// Causes the process to freeze up, you have to then run ResumeThread
 		// on it... even then, the window will pick its own coordinates
-		startupInfo.dwX = config.x;
-		startupInfo.dwY = config.y;
-		startupInfo.dwXSize = config.width;
-		startupInfo.dwYSize = config.height; 
+		startupInfo.dwX = config->x;
+		startupInfo.dwY = config->y;
+		startupInfo.dwXSize = config->width;
+		startupInfo.dwYSize = config->height; 
 			
 			/* (...process create...) */
 			}
@@ -419,8 +410,8 @@ int wmain(int numberOfArgs, WCHAR * programArgs[])
 		lastProcessExitedEvent = NULL;
 	}
 
-	if (config.program.empty()
-		or ((returnCode == ReturnRunClosed) and (config.all))) {
+	if (config->program.empty()
+		or ((returnCode == ReturnRunClosed) and (config->all))) {
 
 		// Assume user will start process to make the title on their own
 		switch(WaitForSingleObject(titleMonitorThread, msecLeft)) {
@@ -432,9 +423,9 @@ int wmain(int numberOfArgs, WCHAR * programArgs[])
 				// This case's screen shot may not be much use, but if we are
 				// returning the timeout code from the executable we should take
 				// a picture of *something* if they requested a timeoutsnapshot
-				if (not config.timeoutsnapshot.empty()) {
+				if (not config->timeoutsnapshot.empty()) {
 					Verify(L"Screen Capture Failed",
-						TakeScreenshotToFile(config.timeoutsnapshot.c_str())
+						TakeScreenshotToFile(config->timeoutsnapshot.c_str())
 					);
 				}
 				returnCode = ReturnTimedOut;
@@ -445,7 +436,7 @@ int wmain(int numberOfArgs, WCHAR * programArgs[])
 		}
 	}
 
-	if (config.verbose)
+	if (config->verbose)
 		std::wcout << L"Return Code was " << returnCode << L"\n";
 
 	// Cleanly tie up the monitor thread.
