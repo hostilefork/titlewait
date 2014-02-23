@@ -35,6 +35,15 @@
 #include "Screenshot.h"
 
 
+// Nasty global variables, but Windows isn't particularly good about making
+// it easy to pass 64-bit compatible pointers around in callbacks, ever since
+// the trick of poking a 32-bit value into GWL_USER went away...
+TitleWaitConfig configWritable;
+
+// Use this to access the program options if you don't need to change them
+TitleWaitConfig const * config = &configWritable;
+
+
 TitleWait::MainReturn TitleWait::TitleWaitMain(int numberOfArgs, WCHAR * programArgs[])
 {
 	if (config->help) {

@@ -28,14 +28,6 @@
 #include "TitleWaitConfig.h"
 #include "HelperFunctions.h"
 
-// Nasty global variables, but Windows isn't particularly good about making
-// it easy to pass 64-bit compatible pointers around in callbacks, ever since
-// the trick of poking a 32-bit value into GWL_USER went away...
-TitleWaitConfig configWritable;
-
-// Use this to access the program options if you don't need to change them
-TitleWaitConfig const * config = &configWritable;
-
 std::wstring TitleWaitConfig::optionNames[OptionMax] = {
 	L"help",
 	L"regex",
@@ -118,7 +110,7 @@ bool TitleWaitConfig::ProcessCommandLineArgs(
 ) {
 	bool result = true;
 
-	configWritable.help = (numberOfArgs <= 1);
+	help = (numberOfArgs <= 1);
 
 	for (int argIndex = 1; argIndex < numberOfArgs; argIndex++) {
 
@@ -149,7 +141,7 @@ bool TitleWaitConfig::ProcessCommandLineArgs(
 			);
 			switch (option) {
 			case HelpOption:
-				configWritable.help = true;
+				help = true;
 				validValue = true;
 				break;
 
@@ -157,7 +149,7 @@ bool TitleWaitConfig::ProcessCommandLineArgs(
 				validValue = GetStringOption(
 					optionNames[optInt],
 					value,
-					/*&*/ configWritable.regex
+					/*&*/ regex
 				);
 				break;
 
@@ -167,7 +159,7 @@ bool TitleWaitConfig::ProcessCommandLineArgs(
 				validValue = GetBoolOption(
 					optionNames[optInt],
 					value,
-					/*&*/ configWritable.close
+					/*&*/ close
 				);	
 				break;
 
@@ -175,7 +167,7 @@ bool TitleWaitConfig::ProcessCommandLineArgs(
 				validValue = GetBoolOption(
 					optionNames[optInt],
 					value,
-					/*&*/ configWritable.all
+					/*&*/ all
 				);
 				break;
 
@@ -183,7 +175,7 @@ bool TitleWaitConfig::ProcessCommandLineArgs(
 				validValue = GetBoolOption(
 					optionNames[optInt],
 					value,
-					/*&*/ configWritable.verbose
+					/*&*/ verbose
 				);
 				break;
 
@@ -191,7 +183,7 @@ bool TitleWaitConfig::ProcessCommandLineArgs(
 				validValue = GetDwordOption(
 					optionNames[optInt],
 					value,
-					/*&*/ configWritable.frequency
+					/*&*/ frequency
 				);
 				break;
 	
@@ -199,7 +191,7 @@ bool TitleWaitConfig::ProcessCommandLineArgs(
 				validValue = GetDwordOption(
 					optionNames[optInt],
 					value,
-					/*&*/ configWritable.timeout
+					/*&*/ timeout
 				);
 				break;
 
@@ -207,7 +199,7 @@ bool TitleWaitConfig::ProcessCommandLineArgs(
 				validValue = GetStringOption(
 					optionNames[optInt],
 					value,
-					/*&*/ configWritable.crashsnapshot
+					/*&*/ crashsnapshot
 				);
 				break;
 
@@ -215,7 +207,7 @@ bool TitleWaitConfig::ProcessCommandLineArgs(
 				validValue = GetStringOption(
 					optionNames[optInt],
 					value,
-					/*&*/ configWritable.titlesnapshot
+					/*&*/ titlesnapshot
 				);
 				break;
 
@@ -223,7 +215,7 @@ bool TitleWaitConfig::ProcessCommandLineArgs(
 				validValue = GetStringOption(
 					optionNames[optInt],
 					value,
-					/*&*/ configWritable.timeoutsnapshot
+					/*&*/ timeoutsnapshot
 				);
 				break;
 
@@ -231,7 +223,7 @@ bool TitleWaitConfig::ProcessCommandLineArgs(
 				validValue = GetStringOption(
 					optionNames[optInt],
 					value,
-					/*&*/ configWritable.program
+					/*&*/ program
 				);
 				break;
 
@@ -239,7 +231,7 @@ bool TitleWaitConfig::ProcessCommandLineArgs(
 				validValue = GetStringOption(
 					optionNames[optInt],
 					value,
-					/*&*/ configWritable.args
+					/*&*/ args
 				);
 				break;
 
@@ -247,7 +239,7 @@ bool TitleWaitConfig::ProcessCommandLineArgs(
 				validValue = GetBoolOption(
 					optionNames[optInt],
 					value,
-					/*&*/ configWritable.defer
+					/*&*/ defer
 				);
 				break;
 
@@ -255,7 +247,7 @@ bool TitleWaitConfig::ProcessCommandLineArgs(
 				validValue = GetDwordOption(
 					optionNames[optInt],
 					value,
-					/*&*/ configWritable.x
+					/*&*/ x
 				);
 				break;
 
@@ -263,7 +255,7 @@ bool TitleWaitConfig::ProcessCommandLineArgs(
 				validValue = GetDwordOption(
 					optionNames[optInt],
 					value,
-					/*&*/ configWritable.y
+					/*&*/ y
 				);
 				break;
 
@@ -271,7 +263,7 @@ bool TitleWaitConfig::ProcessCommandLineArgs(
 				validValue = GetDwordOption(
 					optionNames[optInt],
 					value,
-					/*&*/ configWritable.width
+					/*&*/ width
 				);
 				break;
 
@@ -279,7 +271,7 @@ bool TitleWaitConfig::ProcessCommandLineArgs(
 				validValue = GetDwordOption(
 					optionNames[optInt],
 					value,
-					/*&*/ configWritable.height
+					/*&*/ height
 				);
 				break;
 
@@ -290,7 +282,7 @@ bool TitleWaitConfig::ProcessCommandLineArgs(
 					value,
 					/*&*/ shutdowneventPtr
 				);
-				configWritable.shutdownevent = 
+				shutdownevent = 
 					static_cast<HANDLE>(shutdowneventPtr);
 				break;
 			}

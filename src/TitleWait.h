@@ -23,7 +23,9 @@
 #define __TITLEWAIT_TITLEWAIT_H__
 
 #include "windows.h"
+#include "TitleWaitConfig.h"
 
+extern TitleWaitConfig const * config;
 
 class TitleWait
 {

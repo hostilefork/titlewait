@@ -40,6 +40,7 @@
 #include "windows.h"
 #include "HelperFunctions.h"
 
+
 //
 // Program configuration.
 // Where possible they should match the string in the command line
@@ -129,8 +130,5 @@ public:
 			or (width != CW_USEDEFAULT) or (height != CW_USEDEFAULT);
 	}
 };
-
-extern TitleWaitConfig const * config;
-extern TitleWaitConfig configWritable;
 
 #endif
