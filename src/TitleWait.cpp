@@ -35,13 +35,23 @@
 #include "Screenshot.h"
 
 
-// Nasty global variables, but Windows isn't particularly good about making
+// Nasty global variable, but Windows isn't particularly good about making
 // it easy to pass 64-bit compatible pointers around in callbacks, ever since
 // the trick of poking a 32-bit value into GWL_USER went away...
-TitleWaitConfig configWritable;
+TitleWaitConfig const * config = NULL;
 
-// Use this to access the program options if you don't need to change them
-TitleWaitConfig const * config = &configWritable;
+
+std::wstring TitleWait::returnDescriptions[TitleWait::ReturnMax] = {
+	L"Success (everything was fine)",
+	L"Generic internal error in TitleWait (a bug, report it!)",
+	L"Invoked with bad command line arguments",
+	L"No program to run was supplied with --program",
+	L"A timeout was specified and program didn't exit before timeout",
+	L"Attempt to close the window normally failed, had to terminate",
+	L"The spawned process crashed",
+	L"The spawned process closed itself",
+	L"Running with --defer option and user canceled instead of waiting"
+};
 
 
 TitleWait::MainReturn TitleWait::doMain()
@@ -61,12 +71,27 @@ TitleWait::MainReturn TitleWait::doMain()
 
 			std::wcout << decoratedOption.str() << L'\n';
 		}
-		return ReturnSuccess;
+
+		std::wcout << L"\n";
+
+		std::wcout << L"Return code list:\n\n";
+
+		for (int retInt = 0; retInt < ReturnMax; retInt++) {
+			MainReturn mainReturn =
+				static_cast<MainReturn>(retInt);
+
+			std::wstringstream decoratedReturn;
+			decoratedReturn << retInt << L" => " << returnDescriptions[retInt];
+
+			std::wcout << decoratedReturn.str() << L'\n';
+		}
+
+		return SuccessReturn;
 	}
 
 	if (config->program.empty()) {
 		std::wcerr << L"No program specified via --program.  Nothing to do!\n";
-		return ReturnNoProgram;
+		return NoProgramReturn;
 	}
 
 	// Sometimes if you are using a scripting tool to launch a traditional
@@ -80,13 +105,13 @@ TitleWait::MainReturn TitleWait::doMain()
 	// debug-enabled programs this *will* start a debugger.  Use only if
 	// other approaches are not working.
 
-	MainReturn returnCode = ReturnInternalError;
+	MainReturn ret = InternalErrorReturn;
 	DWORD msecLeft =
 		config->timeout == 0
 		? INFINITE
 		: config->timeout * 1000;
 
-	if (config->shutdownevent) {
+	if (config->shutdownEvent) {
 
 		// NESTED EXECUTIVE
 		//
@@ -166,7 +191,7 @@ TitleWait::MainReturn TitleWait::doMain()
 		);
 
 		// Exit code of second process started is what we detect in parent...
-		return ReturnRunClosed;
+		return ClosedReturn;
 	}
 
 	// Create the thread to begin execution on its own.
@@ -203,9 +228,9 @@ TitleWait::MainReturn TitleWait::doMain()
 
 		std::wstringstream commandLine;
 
-		// Passing to the constructor seems to not put the insertion position at end
-		// Some documents suggest you could with ios_base::ate, but the
-		// wording is dodgy about being "implementation dependent".  Eh?
+		// Passing to the constructor seems to not put the insertion position
+		// at end.  Some documents suggest you could with ios_base::ate, but
+		// the wording is dodgy about being "implementation dependent".  Eh?
 		commandLine << config->RegenerateCommandLine();
 
 		// We'll be running the same command again, only add shutdownevent
@@ -336,7 +361,7 @@ TitleWait::MainReturn TitleWait::doMain()
 			WindowsVerify(L"CreateThread", FALSE);
 
 		// Dirt simple GUI thread right now, we wait for a signal or thread
-		// termination...then read returnCode
+		// termination...then read ret
 
 		HANDLE waitOnObjects[2] = {debugThread, debugArgs.deferEvent};
 		BOOL debugLoopRunning = TRUE;
@@ -364,7 +389,7 @@ TitleWait::MainReturn TitleWait::doMain()
 				);
 				WindowsVerify(L"MessageBox", id != 0);
 				if (id == IDCANCEL) {
-					ExitProcess(ReturnDeferCancel);
+					ExitProcess(DeferCancelledReturn);
 				} else {
 					WindowsVerify(L"SetEvent",
 						SetEvent(debugArgs.retryEvent)
@@ -382,7 +407,7 @@ TitleWait::MainReturn TitleWait::doMain()
 		WindowsVerify(L"GetExitCodeThread", 
 			GetExitCodeThread(debugThread, &dwReturnCode)
 		);
-		returnCode = (MainReturn)dwReturnCode;
+		ret = (MainReturn)dwReturnCode;
 
 		WindowsVerify(L"CloseHandle", CloseHandle(debugThread));
 		WindowsVerify(L"CloseHandle", CloseHandle(debugArgs.deferEvent));
@@ -396,13 +421,13 @@ TitleWait::MainReturn TitleWait::doMain()
 	}
 
 	if (config->program.empty()
-		or ((returnCode == ReturnRunClosed) and (config->all))) {
+		or ((ret == ClosedReturn) and (config->searchAllWindows))) {
 
 		// Assume user will start process to make the title on their own
 		switch(WaitForSingleObject(titleMonitorThread, msecLeft)) {
 			case WAIT_OBJECT_0:
 				// success, thread died of its own accord...
-				returnCode = ReturnSuccess;
+				ret = SuccessReturn;
 				break;
 			case WAIT_TIMEOUT:
 				// This case's screen shot may not be much use, but if we are
@@ -413,16 +438,16 @@ TitleWait::MainReturn TitleWait::doMain()
 						TakeScreenshotToFile(config->timeoutsnapshot.c_str())
 					);
 				}
-				returnCode = ReturnTimedOut;
+				ret = TimeoutReturn;
 				break;
 			default:
 				WindowsVerify(L"WaitForSingleObject", FALSE);
-				returnCode = ReturnInternalError; // Never executed
+				ret = InternalErrorReturn; // Never executed
 		}
 	}
 
 	if (config->verbose)
-		std::wcout << L"Return Code was " << returnCode << L"\n";
+		std::wcout << L"Return Code was " << ret << L"\n";
 
 	// Cleanly tie up the monitor thread.
 	// It may be in a finished state, thus waiting on it returns immediately
@@ -437,5 +462,5 @@ TitleWait::MainReturn TitleWait::doMain()
 
 	WindowsVerify(L"CloseHandle", CloseHandle(titleMonitorThread));
 
-	return returnCode;
+	return ret;
 }

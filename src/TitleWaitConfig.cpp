@@ -106,16 +106,16 @@ bool GetStringOption(
 }
 
 bool TitleWaitConfig::ProcessCommandLineArgs(
-	int numberOfArgs, LPWSTR programArgs[]
+	int numArgs, LPWSTR programArgs[]
 ) {
-	this->numberOfArgs = numberOfArgs;
+	this->numArgs = numArgs;
 	this->programArgs = programArgs;
 
 	bool result = true;
 
-	help = (numberOfArgs <= 1);
+	help = (numArgs <= 1);
 
-	for (int argIndex = 1; argIndex < numberOfArgs; argIndex++) {
+	for (int argIndex = 1; argIndex < numArgs; argIndex++) {
 
 		bool optionMatched = false;
 		bool validValue = true;
@@ -170,7 +170,7 @@ bool TitleWaitConfig::ProcessCommandLineArgs(
 				validValue = GetBoolOption(
 					optionNames[optInt],
 					value,
-					/*&*/ all
+					/*&*/ searchAllWindows
 				);
 				break;
 
@@ -279,14 +279,14 @@ bool TitleWaitConfig::ProcessCommandLineArgs(
 				break;
 
 			case ShutdownEventOption: {
-				void* shutdowneventPtr;
+				void* shutdownEventPtr;
 				validValue = GetPointerOption(
 					optionNames[optInt],
 					value,
-					/*&*/ shutdowneventPtr
+					/*&*/ shutdownEventPtr
 				);
-				shutdownevent = 
-					static_cast<HANDLE>(shutdowneventPtr);
+				shutdownEvent = 
+					static_cast<HANDLE>(shutdownEventPtr);
 				break;
 			}
 
@@ -332,7 +332,7 @@ std::wstring TitleWaitConfig::RegenerateCommandLine() const
 
 	commandLine << L'"' << moduleName << L'"';
 
-	for (int argIndex = 1; argIndex < numberOfArgs; argIndex++) {
+	for (int argIndex = 1; argIndex < numArgs; argIndex++) {
 		commandLine << L' ';
 
 		// must escape any single quotes with \"

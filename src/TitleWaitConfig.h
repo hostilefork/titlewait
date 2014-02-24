@@ -72,6 +72,9 @@ struct TitleWaitConfig
 
 	static std::wstring optionNames[OptionMax];
 
+// First step was moving these into a class, second step would be providing
+// accessor functions... for the moment, clearer to just expose the values.
+public:
 	bool help; // help invocation
 
 	std::wstring regex; // title regular expression
@@ -97,19 +100,19 @@ struct TitleWaitConfig
 
 	// search all windows for the title regex, not just those in the
 	// spawned processes
-	bool all; 
+	bool searchAllWindows; 
 
 	// not a user option
 	// (this is how TitleWait works around child process termination issues!)
-	HANDLE shutdownevent;
+	HANDLE shutdownEvent;
 
-	int numberOfArgs;
+	int numArgs;
 	LPWSTR * programArgs;
 
 public:
-	// Default values.
 	TitleWaitConfig () :
 		help (false),
+		regex (),
 		close (false),
 		verbose (true),
 		frequency (3),
@@ -117,16 +120,21 @@ public:
 		crashsnapshot (),
 		titlesnapshot (),
 		timeoutsnapshot (),
+		program (),
+		args (),
 		defer (false),
 		x (CW_USEDEFAULT),
 		y (CW_USEDEFAULT),
 		width (CW_USEDEFAULT),
 		height (CW_USEDEFAULT),
-		all (false)
+		searchAllWindows (false),
+		shutdownEvent (NULL),
+		numArgs (0),
+		programArgs (NULL)
 	{
 	}
 
-	bool ProcessCommandLineArgs(int numberOfArgs, LPWSTR programArgs[]);
+	bool ProcessCommandLineArgs(int numArgs, LPWSTR programArgs[]);
 	
 	std::wstring RegenerateCommandLine() const;
 

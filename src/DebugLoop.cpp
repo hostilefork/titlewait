@@ -178,7 +178,7 @@ DWORD WINAPI DebugLoopMain(LPVOID lpParam) // returns a MainReturn
 			(config->runWindowPosition ? STARTF_USEPOSITION : 0) |
 			(config->runWindowSize ? STARTF_USESIZE : 0) |
 #endif
-			(config->shutdownevent ? 0 : DEBUG_PROCESS) |
+			(config->shutdownEvent ? 0 : DEBUG_PROCESS) |
 			STARTF_USESHOWWINDOW;
 
 	// REVIEW: for security should lpApplicationName be the same as the 
@@ -190,7 +190,7 @@ DWORD WINAPI DebugLoopMain(LPVOID lpParam) // returns a MainReturn
 			&commandLineCopy[0], // lpCommandLine (no .data() in C++98)
 			0, // lpProcessAttributes
 			0, // lpThreadAttributes
-			config->shutdownevent == NULL ? TRUE : FALSE, // bInheritHandles
+			config->shutdownEvent == NULL ? TRUE : FALSE, // bInheritHandles
 			dwCreationFlags,
 			0, // lpEnvironment
 			0, // lpCurrentDirectory
@@ -294,7 +294,7 @@ DWORD WINAPI DebugLoopMain(LPVOID lpParam) // returns a MainReturn
 						TakeScreenshotToFile(config->timeoutsnapshot.c_str())
 					);
 				}
-				return TitleWait::ReturnTimedOut;
+				return TitleWait::TimeoutReturn;
 			}
 		}
 
@@ -322,7 +322,7 @@ DWORD WINAPI DebugLoopMain(LPVOID lpParam) // returns a MainReturn
 						);
 					}
 	 				debugInfo(L"Child Process Crashed - Quitting");
-					return TitleWait::ReturnRunCrashed;
+					return TitleWait::CrashedReturn;
 				}
 	 
 				case EXCEPTION_BREAKPOINT: {
@@ -480,7 +480,7 @@ DWORD WINAPI DebugLoopMain(LPVOID lpParam) // returns a MainReturn
 #ifdef QUIT_WHEN_MAIN_PROCESS_EXITS
 				// we used to exit here, but now we wait for the LAST
 				// process exiting signal.  We could in theory return
-				// ReturnRunClosed if we want the behavior of quitting
+				// ClosedReturn if we want the behavior of quitting
 				// just because the main process we spawned quit...but that
 				// is not a good default when people are using things like
 				// iexplore which launches a child.... so 
@@ -505,7 +505,7 @@ DWORD WINAPI DebugLoopMain(LPVOID lpParam) // returns a MainReturn
 
 				sm_FreeNTDLLFunctions(ntDllModule);
 
-				return ReturnRunClosed;
+				return ClosedReturn;
 #endif
 				break;
 			}
@@ -569,5 +569,5 @@ DWORD WINAPI DebugLoopMain(LPVOID lpParam) // returns a MainReturn
 	sm_FreeNTDLLFunctions(ntDllModule);
 
 	// unreachable point
-	return TitleWait::ReturnInternalError;
+	return TitleWait::InternalErrorReturn;
 }

@@ -40,7 +40,7 @@ BOOL CALLBACK EnumTopLevelDesktopWindowsProc(HWND topLevelWindow, LPARAM lparam)
 		return TRUE;
 
 	// See if Window is in one of our spawned processes
-	if (!config->all) {
+	if (!config->searchAllWindows) {
 
 		DWORD windowProcessId;
 		DWORD windowThreadId = GetWindowThreadProcessId(

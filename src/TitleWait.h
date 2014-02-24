@@ -33,36 +33,23 @@ public:
 	//
 	// Possible exit codes for the program.  Callers may depend on these
 	// numbers; so keep them invariant, and retire or add numbers as
-	// new conditions arise.
+	// new conditions arise.  Description strings are in TitleWait.cpp
 	//
 	enum MainReturn {
-		// Everything was fine
-		ReturnSuccess = 0,
-
-		// Generic internal error in TitleWait
-		ReturnInternalError = 1,
-
-		// User invoked with bad command line arguments
-		ReturnBadArguments = 2,
-
-		// User didn't supply a program to run
-		ReturnNoProgram = 3,
-
-		// a timeout was given and we terminated abnormally
-		ReturnTimedOut = 4,
-
-		// for some reason, our attempt to close via SC_CLOSE failed
-		ReturnWindowDidntClose = 5,
-
-		// the spawned process crashed
-		ReturnRunCrashed = 6,
-
-		// the spawned process closed itself
-		ReturnRunClosed = 7,
-
-		// canceled because user didn't want to wait for previous instance
-		ReturnDeferCancel = 8
+		ReturnMin = 0,
+		SuccessReturn = 0,
+		InternalErrorReturn = 1,
+		BadArgumentsReturn = 2,
+		NoProgramReturn = 3,
+		TimeoutReturn = 4,
+		WindowDidntCloseReturn = 5,
+		CrashedReturn = 6,
+		ClosedReturn = 7,
+		DeferCancelledReturn = 8,
+		ReturnMax
 	};
+
+	static std::wstring returnDescriptions[ReturnMax];
 
 public:
 	MainReturn doMain();

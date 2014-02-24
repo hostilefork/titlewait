@@ -153,7 +153,7 @@ void WindowsErrorToStderr(LPWSTR functionName, DWORD errorCode, UINT lineNumber)
 			formatMessageErrorCode
 		);
 	}
-	ExitProcess(TitleWait::ReturnInternalError);
+	ExitProcess(TitleWait::InternalErrorReturn);
 }
 
 
@@ -192,7 +192,7 @@ void Verify_Core(LPWSTR msg, BOOL expr, UINT lineNumber) {
 		stderr,
 		L"Report issue to https://github.com/hostilefork/titlewait/issues"
 	);
-	ExitProcess(TitleWait::ReturnInternalError);
+	ExitProcess(TitleWait::InternalErrorReturn);
 }
 
 
