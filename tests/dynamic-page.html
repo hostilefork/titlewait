@@ -3,32 +3,28 @@
 		<title>Running Setup Code...</title>
 		<script type="text/javascript">
 			var htmlMessages = [
-				'Building a complex page...',
-				'One step at a time, using script code...',
+				'Building a complex page with script code...',
 				'Something bad might happen!',
-				'In <img src="ie10_48x48.png"> but not <img src="firefox_48x48.png">...',
-				'Or in <img src="opera_48x48.png"> but not in <img src="safari_48x48.png">...',
+				'In <img src="iexplore-48x48.png" /> but not <img src="firefox-48x48.png" />...',
+				'Or in <img src="opera-48x48.png" /> but not in <img src="safari-48x48.png" />...',
 				'This time you were lucky! <b>It worked!</b>'
-			];
+	 		];
 
 			var messageIndex = 0;
 
 			var PageConstructionFinished = function() {
-				// this is where the user
-				// can start poking
-				// at the controls
-        document.title = "My Complicated Page"
-			};
+		  		// Signal page is ready for user by changing the title
+		  		document.title = "My Complicated Page"
+	  		};
 
 			var NextMessage = function() {
 				document.getElementById("message").innerHTML = htmlMessages[messageIndex];
 				messageIndex++;
-				if (messageIndex < htmlMessages.length) {
+				if (htmlMessages.length > messageIndex) {
 					setTimeout(NextMessage, 3000);
 				} else {
 					PageConstructionFinished();
 				}
-
 			}
 		</script>
 	</head>

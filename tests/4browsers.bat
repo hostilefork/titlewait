@@ -1,10 +1,12 @@
 ::
 :: 4browsers.bat
 ::
-:: This is a test batch file for TitleWait which launches five browsers in sequence,
-:: running a small test page.
+:: This is a test batch file for TitleWait which launches four browsers 
+:: in sequence, running a small test page.
 ::
-:: For more information on TitleWait, see http://titlewait.hostilefork.com
+:: For more information on TitleWait, see:
+::
+::     http://titlewait.hostilefork.com
 ::
 
 
@@ -20,12 +22,17 @@ DEL snapshots\*.bmp
 :: Do you want it to be verbose?  yes or no... (or on or off...)
 SET verbosity="on"
 
+
+:: How long to wait, in seconds, before killing the launched process?
+SET timeout=25
+
+
 :: FIREFOX ::
 
 %titlewait% ^
 	--regex="Complicated" ^
 	--program="C:\Program Files\Mozilla Firefox\firefox" ^
-	--args="-new-window MyComplicatedPage.html" ^
+	--args="-new-window dynamic-page.html" ^
 	--width=300 ^
 	--height=300 ^
 	--x=200 ^
@@ -35,7 +42,7 @@ SET verbosity="on"
 	--regexsnapshot="snapshots\firefox-success.bmp" ^
 	--crashsnapshot="snapshots\firefox-crash.bmp" ^
 	--timeoutsnapshot="snapshots\firefox-timeout.bmp" ^
-	--timeout=30
+	--timeout=%timeout%
 
 
 :: INTERNET EXPLORER ::
@@ -43,7 +50,7 @@ SET verbosity="on"
 %titlewait% ^
 	--regex="Complicated" ^
 	--program="C:\Program Files\Internet Explorer\iexplore" ^
-	--args="file:L:\tests\MyComplicatedPage.html" ^
+	--args="file:L:\tests\dynamic-page.html" ^
 	--width=300 ^
 	--height=300 ^
 	--x=200 ^
@@ -53,7 +60,7 @@ SET verbosity="on"
 	--regexsnapshot="snapshots\iexplore-success.bmp" ^
 	--crashsnapshot="snapshots\iexplore-crash.bmp" ^
 	--timeoutsnapshot="snapshots\iexplore-timeout.bmp" ^
-	--timeout=30
+	--timeout=%timeout%
 
 
 :: SAFARI ::
@@ -61,7 +68,7 @@ SET verbosity="on"
 %titlewait% ^
 	--regex="Complicated" ^
 	--program="C:\Program Files\Safari\safari" ^
-	--args="-url MyComplicatedPage.html" ^
+	--args="-url dynamic-page.html" ^
 	--width=300 ^
 	--height=300 ^
 	--x=200 ^
@@ -71,7 +78,7 @@ SET verbosity="on"
 	--regexsnapshot="snapshots\safari-success.bmp" ^
 	--crashsnapshot="snapshots\safari-crash.bmp" ^
 	--timeoutsnapshot="snapshots\safari-timeout.bmp" ^
-	--timeout=30
+	--timeout=%timeout%
 
 
 :: OPERA ::
@@ -81,7 +88,7 @@ SET verbosity="on"
 %titlewait% ^
 	--regex="Complicated" ^
 	--program="C:\Program Files\Opera\19.0.1326.63\opera" ^
-	--args="MyComplicatedPage.html" ^
+	--args="dynamic-page.html" ^
 	--width=300 ^
 	--height=300 ^
 	--x=200 ^
@@ -91,4 +98,4 @@ SET verbosity="on"
 	--regexsnapshot="snapshots\opera-success.bmp" ^
 	--crashsnapshot="snapshots\opera-crash.bmp" ^
 	--timeoutsnapshot="snapshots\opera-timeout.bmp" ^
-	--timeout=30
+	--timeout=%timeout%

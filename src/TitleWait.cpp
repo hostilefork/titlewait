@@ -59,7 +59,7 @@ TitleWait::MainReturn TitleWait::doMain()
 	if (config->help) {
 		std::wcout << L"\n";
 
-		std::wcout << L"TitleWait (c) 2008 HostileFork.com\n";
+		std::wcout << L"TitleWait (c) 2008-2014 HostileFork.com\n";
 		std::wcout << L"See http://titlewait.hostilefork.com\n\n";
 
 		std::wcout << L"Options are like --verbose=1 or --program=\"foo.exe\"\n";

@@ -154,11 +154,6 @@ BOOL CALLBACK EnumTopLevelDesktopWindowsProc(HWND topLevelWindow, LPARAM lparam)
 		if (!title.empty() and !config->regex.empty()) {
 			std::wsmatch what;
 			if (std::regex_search(title, what, std::wregex(config->regex))) {
-				if (config->verbose) {
-					std::wcout << "Title pattern matched:\n";
-					std::wcout << title << "\n";
-				}
-
 				if (not config->regexSnapshot.empty()) {
 					Verify(L"Screen Capture Failed",
 						TakeScreenshotToFile(config->regexSnapshot.c_str())
