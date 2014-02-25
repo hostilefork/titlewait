@@ -12,7 +12,7 @@
 
 :: Path to titlewait executable to use
 :: Note: No spaces around the = in batch files!!!
-SET titlewait=..\Debug\TitleWait.exe
+SET titlewait=..\Debug\titleWait.exe
 
 
 :: Delete previous screen snapshots

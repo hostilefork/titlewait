@@ -13,7 +13,7 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{8A5E4A9D-0410-46B7-A5AE-9FD0B89211B1}</ProjectGuid>
     <Keyword>MakeFileProj</Keyword>
-    <ProjectName>TitleWait</ProjectName>
+    <ProjectName>titlewait</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
