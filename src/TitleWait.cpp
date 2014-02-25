@@ -378,8 +378,9 @@ TitleWait::MainReturn TitleWait::doMain()
 			0, // use default creation flags 
 			&debugThreadId
 		);
-		if (debugThread == NULL)
+		if (debugThread == NULL) {
 			WindowsVerify(L"CreateThread", FALSE);
+		}
 
 		// Dirt simple GUI thread right now, we wait for a signal or thread
 		// termination...then read ret
@@ -433,16 +434,13 @@ TitleWait::MainReturn TitleWait::doMain()
 		WindowsVerify(L"CloseHandle", CloseHandle(debugThread));
 		WindowsVerify(L"CloseHandle", CloseHandle(debugArgs.deferEvent));
 		WindowsVerify(L"CloseHandle", CloseHandle(debugArgs.retryEvent));
-
-		WindowsVerify(L"CloseHandle", CloseHandle(processListMutex));
-		processListMutex = NULL;
-
-		WindowsVerify(L"CloseHandle", CloseHandle(lastProcessExitedEvent));
-		lastProcessExitedEvent = NULL;
 	}
 
-	if (config->program.empty()
-		or ((ret == ClosedReturn) and (config->searchAll))) {
+	if ((ret == ClosedReturn) and config->searchAll) {
+
+		// We are searching all windows, the program was closed, and the
+		// title matching condition has not been reached.  For as long
+		// as any timeout period remains, we will wait.
 
 		// Assume user will start process to make the title on their own
 		switch(WaitForSingleObject(titleMonitorThread, msecLeft)) {
@@ -451,9 +449,6 @@ TitleWait::MainReturn TitleWait::doMain()
 				ret = SuccessReturn;
 				break;
 			case WAIT_TIMEOUT:
-				// This case's screen shot may not be much use, but if we are
-				// returning the timeout code from the executable we should take
-				// a picture of *something* if they requested a timeoutsnapshot
 				if (not config->timeoutSnapshot.empty()) {
 					Verify(L"Screen Capture Failed",
 						TakeScreenshotToFile(config->timeoutSnapshot.c_str())
@@ -467,9 +462,6 @@ TitleWait::MainReturn TitleWait::doMain()
 		}
 	}
 
-	if (config->verbose)
-		std::wcout << L"Return Code was " << ret << L"\n";
-
 	// Cleanly tie up the monitor thread.
 	// It may be in a finished state, thus waiting on it returns immediately
 	if (WaitForSingleObject(titleMonitorThread, 0) != WAIT_OBJECT_0) {
@@ -482,6 +474,16 @@ TitleWait::MainReturn TitleWait::doMain()
 	}
 
 	WindowsVerify(L"CloseHandle", CloseHandle(titleMonitorThread));
+
+	if (config->verbose) {
+		debugInfo(L"Return Code was %d\n", ret);
+	}
+
+	WindowsVerify(L"CloseHandle", CloseHandle(processListMutex));
+	processListMutex = NULL;
+
+	WindowsVerify(L"CloseHandle", CloseHandle(lastProcessExitedEvent));
+	lastProcessExitedEvent = NULL;
 
 	return ret;
 }

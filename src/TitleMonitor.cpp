@@ -167,7 +167,7 @@ BOOL CALLBACK EnumTopLevelDesktopWindowsProc(HWND topLevelWindow, LPARAM lparam)
 
 				if (config->closeOnMatch) {
 					debugInfo(
-							L"WM_SYSCOMMAND/SC_CLOSE => 0x%x with title: %s\n",
+							L"WM_SYSCOMMAND/SC_CLOSE => 0x%x with title: %s",
 							topLevelWindow,
 							title.c_str()
 						);
