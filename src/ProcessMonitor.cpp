@@ -1,6 +1,6 @@
 //
 // ProcessMonitor.cpp
-// Copyright (c) 2008 HostileFork.com
+// Copyright (c) 2008-2014 HostileFork.com
 //
 // This file is part of TitleWait
 // See http://titlewait.hostilefork.com
@@ -18,6 +18,8 @@
 // You should have received a copy of the GNU General Public License
 // along with TitleWait.  If not, see <http://www.gnu.org/licenses/>.
 //
+
+#include <iostream>
 
 #include "ProcessMonitor.h"
 #include "HelperFunctions.h"

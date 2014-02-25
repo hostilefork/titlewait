@@ -1,8 +1,6 @@
 //
-// ProgramOptions.cpp
-// Copyright (c) 2008 HostileFork.com
-//
-// See comments in TitleWaitConfig.h
+// TitleWaitConfig.cpp
+// Copyright (c) 2008-2014 HostileFork.com
 //
 // This file is part of TitleWait
 // See http://titlewait.hostilefork.com
@@ -30,24 +28,47 @@
 
 std::wstring TitleWaitConfig::optionNames[OptionMax] = {
 	L"help",
-	L"regex",
-	L"close",
-	L"all",
-	L"verbose",
-	L"frequency",
-	L"timeout",
-	L"crashsnapshot",
-	L"titlesnapshot",
-	L"timeoutsnapshot",
 	L"program",
 	L"args",
+	L"regex",
+	L"frequency",
+	L"regexsnapshot",
+	L"closeonmatch",
+	L"searchall",
+	L"timeout",
+	L"timeoutsnapshot",
+	L"crashsnapshot",
 	L"defer",
 	L"x",
 	L"y",
 	L"width",
 	L"height",
+	L"verbose",
 	L"shutdownevent"
 };
+
+
+std::wstring TitleWaitConfig::optionDescriptions[OptionMax] = {
+	L"Show this help information",
+	L"Path to the program to run (required)",
+	L"Arguments to the program",
+	L"The regular expression you want to search the title for",
+	L"How often to check the regex on the title (in seconds, 1 is default)",
+	L"Path to screen snapshot to take if expression matches title (.BMP)",
+	L"Send a window close message to the application if regex matches",
+	L"Search windows of all processes for regex, not just those this spawns",
+	L"Number of seconds the program run before closing it due to timeout",
+	L"Path to screen snapshot to take if timeout period elapses (.BMP)",
+	L"Path to screen snapshot to take if program crashes (.BMP)",
+	L"If the program is already running, wait on execution of new instance",
+	L"X position to ask program window to move to",
+	L"Y position to ask program window to move to",
+	L"Requested width of program window",
+	L"Requested height of program window",
+	L"Verbose debugging mode",
+	L"Internal use only, passed to nested executive for debug control"
+};
+
 
 // Using what boost tolerates for boolean true and false...
 // http://stackoverflow.com/questions/15629771/
@@ -156,21 +177,11 @@ bool TitleWaitConfig::ProcessCommandLineArgs(
 				);
 				break;
 
-			case CloseOption:
-				// NOTE: Can't set a timeOut without closing when found
-				// require parameter to be passed in as close=TRUE
+			case SearchAllOption:
 				validValue = GetBoolOption(
 					optionNames[optInt],
 					value,
-					/*&*/ close
-				);	
-				break;
-
-			case AllOption:
-				validValue = GetBoolOption(
-					optionNames[optInt],
-					value,
-					/*&*/ searchAllWindows
+					/*&*/ searchAll
 				);
 				break;
 
@@ -202,15 +213,23 @@ bool TitleWaitConfig::ProcessCommandLineArgs(
 				validValue = GetStringOption(
 					optionNames[optInt],
 					value,
-					/*&*/ crashsnapshot
+					/*&*/ crashSnapshot
 				);
 				break;
 
-			case TitleSnapshotOption:
+			case RegexSnapshotOption:
 				validValue = GetStringOption(
 					optionNames[optInt],
 					value,
-					/*&*/ titlesnapshot
+					/*&*/ regexSnapshot
+				);
+				break;
+
+			case CloseOnMatchOption:
+				validValue = GetBoolOption(
+					optionNames[optInt],
+					value,
+					/*&*/ closeOnMatch
 				);
 				break;
 
@@ -218,7 +237,7 @@ bool TitleWaitConfig::ProcessCommandLineArgs(
 				validValue = GetStringOption(
 					optionNames[optInt],
 					value,
-					/*&*/ timeoutsnapshot
+					/*&*/ timeoutSnapshot
 				);
 				break;
 

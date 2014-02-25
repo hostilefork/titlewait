@@ -1,6 +1,6 @@
 //
-// TitleWait.cpp
-// Copyright (c) 2008 HostileFork.com
+// HelperFunctions.cpp
+// Copyright (c) 2008-2014 HostileFork.com
 //
 // This file is part of TitleWait
 // See http://titlewait.hostilefork.com
@@ -21,6 +21,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <sstream>
 
 #include "TitleWait.h"
 #include "HelperFunctions.h"
@@ -162,7 +163,7 @@ void ExitProgramOnWindowsError_Core(
 ) {
 	fwprintf(
 		stderr,
-		L"Report issue to https://github.com/hostilefork/titlewait/issues\n"
+		L"Report @ https://github.com/hostilefork/titlewait/issues\n"
 	);
 	WindowsErrorToStderr(functionName, errorCode, lineNumber);
 }
@@ -183,15 +184,12 @@ void Verify_Core(LPWSTR msg, BOOL expr, UINT lineNumber) {
 		return;
 	}
 
-	fwprintf(stderr,
-		L"Terminating program on line %d: condition %s\n",
-		lineNumber,
-		msg
-	);
-	fwprintf(
-		stderr,
-		L"Report issue to https://github.com/hostilefork/titlewait/issues"
-	);
+	// for thread safety put together as one call.
+	std::wstringstream formatStream;
+	formatStream << L"Terminating program on line %d: condition %s\n";
+	formatStream << L"Report @ https://github.com/hostilefork/titlewait/issues\n";
+
+	fwprintf(stderr, formatStream.str().c_str(), lineNumber, msg);
 	ExitProcess(TitleWait::InternalErrorReturn);
 }
 
@@ -201,11 +199,12 @@ int debugInfo(LPWSTR formatString, ...){
 		int retval=0;
 		va_list ap;
 
-		va_start(ap, formatString); /* Initialize the va_list */
-		fwprintf(stderr, L"verbose: ");
-		retval = vfwprintf(stderr, formatString, ap); /* Call vprintf */
-		fwprintf(stderr, L"\n");
-		va_end(ap); /* Cleanup the va_list */
+		// for thread safety put together as one call.
+		std::wstringstream formatStream;
+		formatStream << L"verbose: " << formatString << "\n";
+		va_start(ap, formatString);
+		retval = vfwprintf(stderr, formatStream.str().c_str(), ap);
+		va_end(ap);
 
 		return retval;
 	}
@@ -218,11 +217,12 @@ int debugInfoA(char* formatString, ...){
 		int retval=0;
 		va_list ap;
 
-		va_start(ap, formatString); /* Initialize the va_list */
-		fprintf(stderr, "verbose: ");
-		retval = vfprintf(stderr, formatString, ap); /* Call vprintf */
-		fprintf(stderr, "\n");
-		va_end(ap); /* Cleanup the va_list */
+		// for thread safety put together as one call
+		std::stringstream formatStream;
+		formatStream << "verbose: " << formatString << "\n";
+		va_start(ap, formatString);
+		retval = vfprintf(stderr, formatStream.str().c_str(), ap);
+		va_end(ap);
 
 		return retval;
 	}

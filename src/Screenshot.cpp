@@ -1,6 +1,6 @@
 //
 // Screenshot.cpp
-// Copyright (c) 2008 HostileFork.com
+// Copyright (c) 2008-2014 HostileFork.com
 //
 // This file is part of TitleWait
 // See http://titlewait.hostilefork.com
@@ -17,6 +17,21 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with TitleWait.  If not, see <http://www.gnu.org/licenses/>.
+//
+
+
+//
+// Originally I used
+//   http://www.codeguru.com/cpp/g-m/gdi/capturingimages/print.php/c11231
+//
+// However, when restoring the code in 2014 I found it wasn't working.
+// I went to MSDN as a more authoritative source, which provided code
+// that seemed to work better for this simple application.
+//
+// There are obviously a lot of things that could be added; like trying
+// to detect which specific window areas on the screen are related to
+// the application (a tricky problem in general) or saving to other
+// formats.  But this just uses BMP and adds no additional dependencies.
 //
 
 

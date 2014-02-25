@@ -1,6 +1,6 @@
 //
 // DebugLoop.cpp
-// Copyright (c) 2008 HostileFork.com
+// Copyright (c) 2008-2014 HostileFork.com
 //
 // This file is part of TitleWait
 // See http://titlewait.hostilefork.com
@@ -289,9 +289,9 @@ DWORD WINAPI DebugLoopMain(LPVOID lpParam) // returns a MainReturn
 				// Need to take the screenshot here, because if we return from
 				// the DebugLoop the windows will be closed and the state lost
 				// by the time we return to the caller
-				if (not config->timeoutsnapshot.empty()) {
+				if (not config->timeoutSnapshot.empty()) {
 					Verify(L"Screen Capture Failed", 
-						TakeScreenshotToFile(config->timeoutsnapshot.c_str())
+						TakeScreenshotToFile(config->timeoutSnapshot.c_str())
 					);
 				}
 				return TitleWait::TimeoutReturn;
@@ -316,9 +316,9 @@ DWORD WINAPI DebugLoopMain(LPVOID lpParam) // returns a MainReturn
 
 					debugInfo(L"EXCEPTION_ACCESS_VIOLATION");
 
-					if (not config->crashsnapshot.empty()) {
+					if (not config->crashSnapshot.empty()) {
 						Verify(L"Screen Capture Failed",
-							TakeScreenshotToFile(config->crashsnapshot.c_str())
+							TakeScreenshotToFile(config->crashSnapshot.c_str())
 						);
 					}
 	 				debugInfo(L"Child Process Crashed - Quitting");

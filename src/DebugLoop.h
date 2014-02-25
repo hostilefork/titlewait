@@ -1,6 +1,6 @@
 //
 // DebugLoop.h
-// Copyright (c) 2008 HostileFork.com
+// Copyright (c) 2008-2014 HostileFork.com
 //
 // This file is part of TitleWait
 // See http://titlewait.hostilefork.com

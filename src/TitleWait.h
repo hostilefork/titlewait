@@ -1,6 +1,6 @@
 //
 // TitleWait.h
-// Copyright (c) 2008 HostileFork.com
+// Copyright (c) 2008-2014 HostileFork.com
 //
 // This file is part of TitleWait
 // See http://titlewait.hostilefork.com
@@ -35,6 +35,11 @@ public:
 	// numbers; so keep them invariant, and retire or add numbers as
 	// new conditions arise.  Description strings are in TitleWait.cpp
 	//
+	// "on POSIX-compatible systems, exit statuses are restricted
+	//  to values 0-255, the range of an unsigned 8-bit integer"
+	//
+	//     http://en.wikipedia.org/wiki/Exit_status
+	// 
 	enum MainReturn {
 		ReturnMin = 0,
 		SuccessReturn = 0,

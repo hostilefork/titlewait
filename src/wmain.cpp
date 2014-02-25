@@ -1,6 +1,6 @@
 //
 // wmain.cpp
-// Copyright (c) 2008 HostileFork.com
+// Copyright (c) 2008-2014 HostileFork.com
 //
 // This file is part of TitleWait
 // See http://titlewait.hostilefork.com
@@ -22,12 +22,13 @@
 #include "TitleWait.h"
 #include "TitleWaitConfig.h"
 
+//
 // No TCHAR legacy, assume WCHAR everywhere...
-// http://stackoverflow.com/a/3002494
-
-
+//     http://stackoverflow.com/a/3002494
+//
 // Define wmain instead of _tmain, project defines _UNICODE
-// http://stackoverflow.com/a/895894
+//     http://stackoverflow.com/a/895894
+//
 int wmain(int numArgs, WCHAR * programArgs[])
 {	
 	TitleWaitConfig configWritable;

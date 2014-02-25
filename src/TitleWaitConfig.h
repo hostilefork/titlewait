@@ -2,19 +2,6 @@
 // TitleWaitConfig.h
 // Copyright (c) 2008 HostileFork.com
 //
-// Lame program option reading routines.  When I started this
-// project in 2008, I really wanted to keep it lightweight and
-// not rely on boost.  I also wanted to make sure it supported
-// Unicode, which simpler libraries did not.  As the program grew
-// more complex, and began to need many more options (and quite
-// possibly config files) I concluded avoiding boost was myopic.
-//
-// But I did a small modification to read a more or less
-// boost-compatible format, so this could be upgraded easily if
-// anyone had an interest.  Therefore the options look like:
-//
-//     --optionname="stuff in quotes, usually"
-// 
 // This file is part of TitleWait
 // See http://titlewait.hostilefork.com
 //
@@ -42,35 +29,46 @@
 
 
 //
-// Program configuration.
-// Where possible they should match the string in the command line
+// Lame program option reading routines.  When I started this
+// project in 2008, I really wanted to keep it lightweight and
+// not rely on boost.  I also wanted to make sure it supported
+// Unicode, which simpler libraries did not.  As the program grew
+// more complex, and began to need many more options (and quite
+// possibly config files) I concluded avoiding boost was myopic.
 //
+// But I did a small modification to read a more or less
+// boost-compatible format, so this could be upgraded easily if
+// anyone had an interest.  Therefore the options look like:
+//
+//     --optionname="stuff in quotes, usually"
+// 
 struct TitleWaitConfig
 {
 	enum Option {
 		OptionFirst = 0,
 		HelpOption = 0,
-		RegexOption,
-		CloseOption,
-		AllOption,
-		VerboseOption,
-		FrequencyOption,
-		TimeoutOption,
-		CrashSnapshotOption,
-		TitleSnapshotOption,
-		TimeoutSnapshotOption,
 		ProgramOption,
 		ArgsOption,
+		RegexOption,
+		FrequencyOption,
+		RegexSnapshotOption,
+		SearchAllOption,
+		CloseOnMatchOption,
+		TimeoutOption,
+		TimeoutSnapshotOption,
+		CrashSnapshotOption,
 		DeferOption,
 		XOption,
 		YOption,
 		WidthOption,
 		HeightOption,
+		VerboseOption,
 		ShutdownEventOption,
 		OptionMax
 	};
 
 	static std::wstring optionNames[OptionMax];
+	static std::wstring optionDescriptions[OptionMax];
 
 // First step was moving these into a class, second step would be providing
 // accessor functions... for the moment, clearer to just expose the values.
@@ -78,16 +76,14 @@ public:
 	bool help; // help invocation
 
 	std::wstring regex; // title regular expression
-	
-	bool close; // close the window once found?
 
 	bool verbose; // send debug information to stderr?
 	DWORD frequency; // poll time in seconds
 	DWORD timeout; // timeout interval in seconds, zero means no timeout
 
-	std::wstring crashsnapshot; // path to bitmap to capture
-	std::wstring titlesnapshot;
-	std::wstring timeoutsnapshot;
+	std::wstring crashSnapshot; // path to bitmap to capture
+	std::wstring regexSnapshot;
+	std::wstring timeoutSnapshot;
 
 	// Options if we are running as a debugger
 	std::wstring program; // full path of program to run
@@ -100,7 +96,9 @@ public:
 
 	// search all windows for the title regex, not just those in the
 	// spawned processes
-	bool searchAllWindows; 
+	bool searchAll;
+
+	bool closeOnMatch;
 
 	// not a user option
 	// (this is how TitleWait works around child process termination issues!)
@@ -113,13 +111,13 @@ public:
 	TitleWaitConfig () :
 		help (false),
 		regex (),
-		close (false),
 		verbose (true),
 		frequency (3),
 		timeout (0),
-		crashsnapshot (),
-		titlesnapshot (),
-		timeoutsnapshot (),
+		crashSnapshot (),
+		regexSnapshot (),
+		closeOnMatch (false),
+		timeoutSnapshot (),
 		program (),
 		args (),
 		defer (false),
@@ -127,7 +125,7 @@ public:
 		y (CW_USEDEFAULT),
 		width (CW_USEDEFAULT),
 		height (CW_USEDEFAULT),
-		searchAllWindows (false),
+		searchAll (false),
 		shutdownEvent (NULL),
 		numArgs (0),
 		programArgs (NULL)

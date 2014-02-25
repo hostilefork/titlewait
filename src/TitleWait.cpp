@@ -1,6 +1,6 @@
 //
 // TitleWait.cpp
-// Copyright (c) 2008 HostileFork.com
+// Copyright (c) 2008-2014 HostileFork.com
 //
 // This file is part of TitleWait
 // See http://titlewait.hostilefork.com
@@ -42,14 +42,14 @@ TitleWaitConfig const * config = NULL;
 
 
 std::wstring TitleWait::returnDescriptions[TitleWait::ReturnMax] = {
-	L"Success (everything was fine)",
-	L"Generic internal error in TitleWait (a bug, report it!)",
+	L"Success",
+	L"Bug! Report to https://github.com/hostilefork/titlewait/issues",
 	L"Invoked with bad command line arguments",
 	L"No program to run was supplied with --program",
 	L"A timeout was specified and program didn't exit before timeout",
 	L"Attempt to close the window normally failed, had to terminate",
 	L"The spawned process crashed",
-	L"The spawned process closed itself",
+	L"The spawned process closed itself before match or timeout",
 	L"Running with --defer option and user canceled instead of waiting"
 };
 
@@ -57,31 +57,52 @@ std::wstring TitleWait::returnDescriptions[TitleWait::ReturnMax] = {
 TitleWait::MainReturn TitleWait::doMain()
 {
 	if (config->help) {
+		std::wcout << L"\n";
+
 		std::wcout << L"TitleWait (c) 2008 HostileFork.com\n";
 		std::wcout << L"See http://titlewait.hostilefork.com\n\n";
 
-		std::wcout << L"Option list:\n\n";
+		std::wcout << L"Options are like --verbose=1 or --program=\"foo.exe\"\n";
+		std::wcout << L"For all options that are strings, enclose in quotes.\n";
+		std::wcout << L"To embed quotes in those strings, use \\\"\n";
+		std::wcout << L"For booleans, use on/true/yes/1 or off/false/no/0\n";
+
+		std::wcout << L"\n";
+
+		std::wcout << L"Tip: Long command line? Use ^ to join lines\n"; 
+
+		std::wcout << L"\n";
+
+		std::wcout << L"OPTION LIST:\n";
+
+		std::wcout << L"\n";
 
 		for (int optInt = 0; optInt < TitleWaitConfig::OptionMax; optInt++) {
 			TitleWaitConfig::Option option =
 				static_cast<TitleWaitConfig::Option>(optInt);
 
 			std::wstringstream decoratedOption;
-			decoratedOption << L"--" << TitleWaitConfig::optionNames[optInt];
+			decoratedOption << L"  --" << TitleWaitConfig::optionNames[optInt];
 
 			std::wcout << decoratedOption.str() << L'\n';
+
+			std::wcout << L"    ";
+			
+			std::wcout << TitleWaitConfig::optionDescriptions[optInt] << "\n";
+
+			std::wcout << L"\n";
 		}
 
-		std::wcout << L"\n";
+		std::wcout << L"RETURN CODE LIST:\n";
 
-		std::wcout << L"Return code list:\n\n";
+		std::wcout << L"\n";
 
 		for (int retInt = 0; retInt < ReturnMax; retInt++) {
 			MainReturn mainReturn =
 				static_cast<MainReturn>(retInt);
 
 			std::wstringstream decoratedReturn;
-			decoratedReturn << retInt << L" => " << returnDescriptions[retInt];
+			decoratedReturn << L"  " << retInt << L" => " << returnDescriptions[retInt];
 
 			std::wcout << decoratedReturn.str() << L'\n';
 		}
@@ -173,7 +194,7 @@ TitleWait::MainReturn TitleWait::doMain()
 		int systemResult = system(commandLine.str().c_str());
 
 		debugInfoA(
-			"system(%s) returned with result %d\n",
+			"system(%s) returned with result %d",
 			commandLine.str().c_str(),
 			systemResult
 		);
@@ -421,7 +442,7 @@ TitleWait::MainReturn TitleWait::doMain()
 	}
 
 	if (config->program.empty()
-		or ((ret == ClosedReturn) and (config->searchAllWindows))) {
+		or ((ret == ClosedReturn) and (config->searchAll))) {
 
 		// Assume user will start process to make the title on their own
 		switch(WaitForSingleObject(titleMonitorThread, msecLeft)) {
@@ -433,9 +454,9 @@ TitleWait::MainReturn TitleWait::doMain()
 				// This case's screen shot may not be much use, but if we are
 				// returning the timeout code from the executable we should take
 				// a picture of *something* if they requested a timeoutsnapshot
-				if (not config->timeoutsnapshot.empty()) {
+				if (not config->timeoutSnapshot.empty()) {
 					Verify(L"Screen Capture Failed",
-						TakeScreenshotToFile(config->timeoutsnapshot.c_str())
+						TakeScreenshotToFile(config->timeoutSnapshot.c_str())
 					);
 				}
 				ret = TimeoutReturn;

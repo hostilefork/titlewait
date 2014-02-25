@@ -1,6 +1,6 @@
 //
 // TitleMonitor.cpp
-// Copyright (c) 2008 HostileFork.com
+// Copyright (c) 2008-2014 HostileFork.com
 //
 // This file is part of TitleWait
 // See http://titlewait.hostilefork.com
@@ -40,7 +40,7 @@ BOOL CALLBACK EnumTopLevelDesktopWindowsProc(HWND topLevelWindow, LPARAM lparam)
 		return TRUE;
 
 	// See if Window is in one of our spawned processes
-	if (!config->searchAllWindows) {
+	if (!config->searchAll) {
 
 		DWORD windowProcessId;
 		DWORD windowThreadId = GetWindowThreadProcessId(
@@ -159,13 +159,13 @@ BOOL CALLBACK EnumTopLevelDesktopWindowsProc(HWND topLevelWindow, LPARAM lparam)
 					std::wcout << title << "\n";
 				}
 
-				if (not config->titlesnapshot.empty()) {
+				if (not config->regexSnapshot.empty()) {
 					Verify(L"Screen Capture Failed",
-						TakeScreenshotToFile(config->titlesnapshot.c_str())
+						TakeScreenshotToFile(config->regexSnapshot.c_str())
 					);
 				}
 
-				if (config->close) {
+				if (config->closeOnMatch) {
 					debugInfo(
 							L"WM_SYSCOMMAND/SC_CLOSE => 0x%x with title: %s\n",
 							topLevelWindow,
