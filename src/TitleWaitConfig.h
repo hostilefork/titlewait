@@ -111,7 +111,7 @@ public:
 	TitleWaitConfig () :
 		help (false),
 		regex (),
-		verbose (true),
+		verbose (false),
 		frequency (3),
 		timeout (0),
 		crashSnapshot (),
