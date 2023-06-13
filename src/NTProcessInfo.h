@@ -25,6 +25,25 @@
 #ifndef _ORIONSCORPION_NTPROCESSINFO_H_
 #define _ORIONSCORPION_NTPROCESSINFO_H_
 
+#pragma once
+
+#include <windows.h>
+#include <winternl.h>
+#include <psapi.h>
+
+#define STRSAFE_LIB
+#include <strsafe.h>
+
+#pragma comment(lib, "strsafe.lib")
+#pragma comment(lib, "rpcrt4.lib")
+#pragma comment(lib, "psapi.lib")
+
+// !!! TitleWait modification: add this #if.  It seems winternl.h
+// was updated to define this enumeration for _WIN32_WINNT >= 0x0500
+// so trust use of that definition of PROCESSINFOCLASS if available.
+//
+#if (_WIN32_WINNT < 0x0500)
+
 typedef enum _PROCESSINFOCLASS {
     ProcessBasicInformation,
     ProcessQuotaLimits,
@@ -56,18 +75,7 @@ typedef enum _PROCESSINFOCLASS {
     MaxProcessInfoClass
     } PROCESSINFOCLASS;
 
-#pragma once
-
-#include <windows.h>
-#include <winternl.h>
-#include <psapi.h>
-
-#define STRSAFE_LIB
-#include <strsafe.h>
-
-#pragma comment(lib, "strsafe.lib")
-#pragma comment(lib, "rpcrt4.lib")
-#pragma comment(lib, "psapi.lib")
+#endif  // !!! TitleWait modification
 
 #ifndef NTSTATUS
 #define LONG NTSTATUS
