@@ -10,7 +10,7 @@ Many programs--even those with limited scriptability by the user--can have their
 
 You can then use TitleWait to watch for the appearance of this string as part of the title bar of any of your windows.  Browsers generally add their own text, but will always have the page title as a part of the title bar.  You can use regular expressions to define the condition
 
-	titlewait --program="iexplore.exe" --regex=".*Tests Successful.*"
+    titlewait --program="iexplore.exe" --regex=".*Tests Successful.*"
 
 Thus, using no other interprocess communication methods, it's possible to use the title to "signal" this small program that a certain condition has been reached.  It will not terminate until that happens, unless you specify a timeout.  As an added bonus, TitleWait can take screen snapshots of the application's window or the whole screen in the case of a crash, timeout, or title match.  You can also set the position of the launched process's window on the screen.
 
@@ -96,7 +96,7 @@ There are many options and return codes to the shell, which you can get by runni
 
 When I came up with the idea of using the window title to signal a testing tool from JavaScript, I thought this would be pretty easy.  That was back in 2008, and I found that getting the precise behaviors I wanted were not as simple.  In trying to get a smooth experience, I wound up having to implement TitleWait as as a debugger (using the same APIs that programs like Visual Studio use) to get greater control over spawned processes.
 
-I'd be very interested to know if someone could reproduce these results using [AutoHotkey](http://en.wikipedia.org/wiki/AutoHotkey) (GPL) or [AutoIt](http://en.wikipedia.org/wiki/AutoIt) (free, closed), which I found out about a couple years laterlater.  Though I'd suspect they wouldn't handle some of these cases.
+I'd be very interested to know if someone could reproduce these results using [AutoHotkey](http://en.wikipedia.org/wiki/AutoHotkey) (GPL) or [AutoIt](http://en.wikipedia.org/wiki/AutoIt) (free, closed), which I found out about a couple years later.  Though I'd suspect they wouldn't handle some of these cases.
 
 What is tricky in particular is the graceful handling of dealing with programs that are implemented in terms of a launcher and child processes, such as many browsers today.  Being a debugger makes it easier to stay in the driver's seat and get notifications as processes and threads are started and stopped.  So even if you called a program that launched and returned to the shell immediately (like IEXPLORE.EXE), a script using TitleWait can hold up until the processes doing the real work have all actually exited.
 

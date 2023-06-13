@@ -1,36 +1,36 @@
 <html>
-	<head>
-		<title>Running Setup Code...</title>
-		<script type="text/javascript">
-			var htmlMessages = [
-				'Building a complex page with script code...',
-				'Something bad might happen!',
-				'In <img src="iexplore-48x48.png" /> but not <img src="firefox-48x48.png" />...',
-				'Or in <img src="opera-48x48.png" /> but not in <img src="safari-48x48.png" />...',
-				'This time you were lucky! <b>It worked!</b>'
-	 		];
+    <head>
+        <title>Running Setup Code...</title>
+        <script type="text/javascript">
+            var htmlMessages = [
+                'Building a complex page with script code...',
+                'Something bad might happen!',
+                'In <img src="iexplore-48x48.png" /> but not <img src="firefox-48x48.png" />...',
+                'Or in <img src="opera-48x48.png" /> but not in <img src="safari-48x48.png" />...',
+                'This time you were lucky! <b>It worked!</b>'
+             ];
 
-			var messageIndex = 0;
+            var messageIndex = 0;
 
-			var PageConstructionFinished = function() {
-		  		// Signal page is ready for user by changing the title
-		  		document.title = "My Complicated Page"
-	  		};
+            var PageConstructionFinished = function() {
+                  // Signal page is ready for user by changing the title
+                  document.title = "My Complicated Page"
+              };
 
-			var NextMessage = function() {
-				document.getElementById("message").innerHTML = htmlMessages[messageIndex];
-				messageIndex++;
-				if (htmlMessages.length > messageIndex) {
-					setTimeout(NextMessage, 3000);
-				} else {
-					PageConstructionFinished();
-				}
-			}
-		</script>
-	</head>
-	<body onload="NextMessage();">
-		<div id="message">
-			<p>Initial HTML Text</p>
-		</div>
-	</body>
+            var NextMessage = function() {
+                document.getElementById("message").innerHTML = htmlMessages[messageIndex];
+                messageIndex++;
+                if (htmlMessages.length > messageIndex) {
+                    setTimeout(NextMessage, 3000);
+                } else {
+                    PageConstructionFinished();
+                }
+            }
+        </script>
+    </head>
+    <body onload="NextMessage();">
+        <div id="message">
+            <p>Initial HTML Text</p>
+        </div>
+    </body>
 </html>

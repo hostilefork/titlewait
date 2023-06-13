@@ -26,14 +26,14 @@
 #include "windows.h"
 
 struct DebugArgs {
-	std::wstring commandLine;
-	STARTUPINFO* startupInfo;
-	LPDWORD msecLeft;
-	HANDLE deferEvent; // we tell GUI when we notice another process
-	
-	// GUI thread tells us when they said Retry.  We must poll to get this.
-	HANDLE retryEvent; 
-	std::wstring exeImageName;
+    std::wstring commandLine;
+    STARTUPINFO* startupInfo;
+    LPDWORD msecLeft;
+    HANDLE deferEvent; // we tell GUI when we notice another process
+
+    // GUI thread tells us when they said Retry.  We must poll to get this.
+    HANDLE retryEvent;
+    std::wstring exeImageName;
 };
 
 DWORD WINAPI DebugLoopMain(LPVOID lpParam); // returns a MainReturn

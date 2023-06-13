@@ -37,20 +37,20 @@ void Verify_Core(LPWSTR msg, BOOL expr, UINT lineNumber);
 #define NotReached(msg) Verify_Core((msg), FALSE, __LINE__)
 
 void WindowsVerify_Core(
-	LPWSTR functionName, BOOL windowsReturnBoolean, UINT lineNumber
+    LPWSTR functionName, BOOL windowsReturnBoolean, UINT lineNumber
 );
 #define WindowsVerify(functionName,errorCode) \
-	WindowsVerify_Core((functionName), (errorCode), __LINE__)
+    WindowsVerify_Core((functionName), (errorCode), __LINE__)
 
 // Helpful for noting which windows functions have been checked in the API
 // docs that return void.  (Annotates you don't need WindowsVerify on them)
 #define WindowsVoid(X) X
 
 void ExitProgramOnWindowsError_Core(
-	LPWSTR functionName, DWORD errorCode, UINT lineNumber
+    LPWSTR functionName, DWORD errorCode, UINT lineNumber
 );
 #define ExitProgramOnWindowsError(functionName, errorCode) \
-	ExitProgramOnWindowsError_Core((functionName),(errorCode), __LINE__)
+    ExitProgramOnWindowsError_Core((functionName),(errorCode), __LINE__)
 
 
 int debugInfo(LPWSTR formatString, ...);
@@ -58,10 +58,10 @@ int debugInfoA(char* formatString, ...); // try not to use...
 
 // Base 64 encoding is generally a useful thing to have around
 BOOL base64_encode(
-	const UCHAR* input, DWORD input_length, UCHAR* output, DWORD* output_length
+    const UCHAR* input, DWORD input_length, UCHAR* output, DWORD* output_length
 );
 BOOL base64_decode(
-	const UCHAR* input, DWORD input_length, UCHAR* output, DWORD* output_length
+    const UCHAR* input, DWORD input_length, UCHAR* output, DWORD* output_length
 );
 
 #endif

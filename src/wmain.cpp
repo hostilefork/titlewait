@@ -30,14 +30,14 @@
 //     http://stackoverflow.com/a/895894
 //
 int wmain(int numArgs, WCHAR * programArgs[])
-{	
-	TitleWaitConfig configWritable;
-	if (!configWritable.ProcessCommandLineArgs(numArgs, programArgs)) {
-		return TitleWait::BadArgumentsReturn;
-	}
+{
+    TitleWaitConfig configWritable;
+    if (!configWritable.ProcessCommandLineArgs(numArgs, programArgs)) {
+        return TitleWait::BadArgumentsReturn;
+    }
 
-	config = &configWritable;
+    config = &configWritable;
 
-	TitleWait titlewait;
-	return titlewait.doMain();
+    TitleWait titlewait;
+    return titlewait.doMain();
 }

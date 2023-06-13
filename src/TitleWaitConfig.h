@@ -41,105 +41,105 @@
 // anyone had an interest.  Therefore the options look like:
 //
 //     --optionname="stuff in quotes, usually"
-// 
+//
 struct TitleWaitConfig
 {
-	enum Option {
-		OptionFirst = 0,
-		HelpOption = 0,
-		ProgramOption,
-		ArgsOption,
-		RegexOption,
-		FrequencyOption,
-		RegexSnapshotOption,
-		CloseOnMatchOption,
-		SearchAllOption,
-		TimeoutOption,
-		TimeoutSnapshotOption,
-		CrashSnapshotOption,
-		DeferOption,
-		XOption,
-		YOption,
-		WidthOption,
-		HeightOption,
-		VerboseOption,
-		ShutdownEventOption,
-		OptionMax
-	};
+    enum Option {
+        OptionFirst = 0,
+        HelpOption = 0,
+        ProgramOption,
+        ArgsOption,
+        RegexOption,
+        FrequencyOption,
+        RegexSnapshotOption,
+        CloseOnMatchOption,
+        SearchAllOption,
+        TimeoutOption,
+        TimeoutSnapshotOption,
+        CrashSnapshotOption,
+        DeferOption,
+        XOption,
+        YOption,
+        WidthOption,
+        HeightOption,
+        VerboseOption,
+        ShutdownEventOption,
+        OptionMax
+    };
 
-	static std::wstring optionNames[OptionMax];
-	static std::wstring optionDescriptions[OptionMax];
+    static std::wstring optionNames[OptionMax];
+    static std::wstring optionDescriptions[OptionMax];
 
 // First step was moving these into a class, second step would be providing
 // accessor functions... for the moment, clearer to just expose the values.
 public:
-	bool help; // help invocation
+    bool help; // help invocation
 
-	std::wstring regex; // title regular expression
+    std::wstring regex; // title regular expression
 
-	bool verbose; // send debug information to stderr?
-	DWORD frequency; // poll time in seconds
-	DWORD timeout; // timeout interval in seconds, zero means no timeout
+    bool verbose; // send debug information to stderr?
+    DWORD frequency; // poll time in seconds
+    DWORD timeout; // timeout interval in seconds, zero means no timeout
 
-	std::wstring crashSnapshot; // path to bitmap to capture
-	std::wstring regexSnapshot;
-	std::wstring timeoutSnapshot;
+    std::wstring crashSnapshot; // path to bitmap to capture
+    std::wstring regexSnapshot;
+    std::wstring timeoutSnapshot;
 
-	// Options if we are running as a debugger
-	std::wstring program; // full path of program to run
-	std::wstring args; // command line arguments
-	bool defer;
-	DWORD x;
-	DWORD y;
-	DWORD width;
-	DWORD height;
+    // Options if we are running as a debugger
+    std::wstring program; // full path of program to run
+    std::wstring args; // command line arguments
+    bool defer;
+    DWORD x;
+    DWORD y;
+    DWORD width;
+    DWORD height;
 
-	// search all windows for the title regex, not just those in the
-	// spawned processes
-	bool searchAll;
+    // search all windows for the title regex, not just those in the
+    // spawned processes
+    bool searchAll;
 
-	bool closeOnMatch;
+    bool closeOnMatch;
 
-	// not a user option
-	// (this is how TitleWait works around child process termination issues!)
-	HANDLE shutdownEvent;
+    // not a user option
+    // (this is how TitleWait works around child process termination issues!)
+    HANDLE shutdownEvent;
 
-	int numArgs;
-	LPWSTR * programArgs;
+    int numArgs;
+    LPWSTR * programArgs;
 
 public:
-	TitleWaitConfig () :
-		help (false),
-		regex (),
-		verbose (false),
-		frequency (3),
-		timeout (0),
-		crashSnapshot (),
-		regexSnapshot (),
-		closeOnMatch (false),
-		timeoutSnapshot (),
-		program (),
-		args (),
-		defer (false),
-		x (CW_USEDEFAULT),
-		y (CW_USEDEFAULT),
-		width (CW_USEDEFAULT),
-		height (CW_USEDEFAULT),
-		searchAll (false),
-		shutdownEvent (NULL),
-		numArgs (0),
-		programArgs (NULL)
-	{
-	}
+    TitleWaitConfig () :
+        help (false),
+        regex (),
+        verbose (false),
+        frequency (3),
+        timeout (0),
+        crashSnapshot (),
+        regexSnapshot (),
+        closeOnMatch (false),
+        timeoutSnapshot (),
+        program (),
+        args (),
+        defer (false),
+        x (CW_USEDEFAULT),
+        y (CW_USEDEFAULT),
+        width (CW_USEDEFAULT),
+        height (CW_USEDEFAULT),
+        searchAll (false),
+        shutdownEvent (NULL),
+        numArgs (0),
+        programArgs (NULL)
+    {
+    }
 
-	bool ProcessCommandLineArgs(int numArgs, LPWSTR programArgs[]);
-	
-	std::wstring RegenerateCommandLine() const;
+    bool ProcessCommandLineArgs(int numArgs, LPWSTR programArgs[]);
 
-	bool shouldMoveWindow() const {
-		return (x != CW_USEDEFAULT) or (y != CW_USEDEFAULT)
-			or (width != CW_USEDEFAULT) or (height != CW_USEDEFAULT);
-	}
+    std::wstring RegenerateCommandLine() const;
+
+    bool shouldMoveWindow() const {
+        return (x != CW_USEDEFAULT) or (y != CW_USEDEFAULT)
+            or (width != CW_USEDEFAULT) or (height != CW_USEDEFAULT);
+    }
 };
 
 #endif

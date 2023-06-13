@@ -30,34 +30,34 @@ extern TitleWaitConfig const * config;
 class TitleWait
 {
 public:
-	//
-	// Possible exit codes for the program.  Callers may depend on these
-	// numbers; so keep them invariant, and retire or add numbers as
-	// new conditions arise.  Description strings are in TitleWait.cpp
-	//
-	// "on POSIX-compatible systems, exit statuses are restricted
-	//  to values 0-255, the range of an unsigned 8-bit integer"
-	//
-	//     http://en.wikipedia.org/wiki/Exit_status
-	// 
-	enum MainReturn {
-		ReturnMin = 0,
-		SuccessReturn = 0,
-		InternalErrorReturn = 1,
-		BadArgumentsReturn = 2,
-		NoProgramReturn = 3,
-		TimeoutReturn = 4,
-		WindowDidntCloseReturn = 5,
-		CrashedReturn = 6,
-		ClosedReturn = 7,
-		DeferCancelledReturn = 8,
-		ReturnMax
-	};
+    //
+    // Possible exit codes for the program.  Callers may depend on these
+    // numbers; so keep them invariant, and retire or add numbers as
+    // new conditions arise.  Description strings are in TitleWait.cpp
+    //
+    // "on POSIX-compatible systems, exit statuses are restricted
+    //  to values 0-255, the range of an unsigned 8-bit integer"
+    //
+    //     http://en.wikipedia.org/wiki/Exit_status
+    //
+    enum MainReturn {
+        ReturnMin = 0,
+        SuccessReturn = 0,
+        InternalErrorReturn = 1,
+        BadArgumentsReturn = 2,
+        NoProgramReturn = 3,
+        TimeoutReturn = 4,
+        WindowDidntCloseReturn = 5,
+        CrashedReturn = 6,
+        ClosedReturn = 7,
+        DeferCancelledReturn = 8,
+        ReturnMax
+    };
 
-	static std::wstring returnDescriptions[ReturnMax];
+    static std::wstring returnDescriptions[ReturnMax];
 
 public:
-	MainReturn doMain();
+    MainReturn doMain();
 };
 
 #endif

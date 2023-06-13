@@ -13,7 +13,7 @@
 //***********************************************************************/
 // Functions to access NtQueryInformationProcess in NTDLL.DLL
 //
-// Copyright © 2007 Steven Moore (OrionScorpion).  All Rights Reserved.
+// Copyright Â© 2007 Steven Moore (OrionScorpion).  All Rights Reserved.
 //
 //***********************************************************************/
 
@@ -34,30 +34,30 @@ PGETPROCESSIMAGEFILENAME getProcessImageFileNameFunction = NULL;
 BOOL sm_EnableTokenPrivilege(LPCTSTR pszPrivilege)
 {
 	HANDLE hToken		 = 0;
-	TOKEN_PRIVILEGES tkp = {0}; 
+	TOKEN_PRIVILEGES tkp = {0};
 
-	// Get a token for this process. 
+	// Get a token for this process.
 	if (!OpenProcessToken(GetCurrentProcess(),
 						  TOKEN_ADJUST_PRIVILEGES |
 						  TOKEN_QUERY, &hToken))
 	{
-        return FALSE;
+		return FALSE;
 	}
 
-	// Get the LUID for the privilege. 
+	// Get the LUID for the privilege.
 	if(LookupPrivilegeValue(NULL, pszPrivilege,
-						    &tkp.Privileges[0].Luid)) 
+						    &tkp.Privileges[0].Luid))
 	{
-        tkp.PrivilegeCount = 1;  // one privilege to set    
+		tkp.PrivilegeCount = 1;  // one privilege to set
 		tkp.Privileges[0].Attributes = SE_PRIVILEGE_ENABLED;
 
-		// Set the privilege for this process. 
+		// Set the privilege for this process.
 		AdjustTokenPrivileges(hToken, FALSE, &tkp, 0,
-							  (PTOKEN_PRIVILEGES)NULL, 0); 
+							  (PTOKEN_PRIVILEGES)NULL, 0);
 
 		if (GetLastError() != ERROR_SUCCESS)
 			return FALSE;
-		
+
 		return TRUE;
 	}
 
@@ -69,8 +69,8 @@ BOOL sm_EnableTokenPrivilege(LPCTSTR pszPrivilege)
 HMODULE sm_LoadNTDLLFunctions()
 {
 #ifdef NTPROCESSINFO_LOAD_PSAPI
-	// *** TITLEWAIT MODIFICATION *** ... 
-	// can't use GetModuleFileNameEx...does not work 
+	// *** TITLEWAIT MODIFICATION *** ...
+	// can't use GetModuleFileNameEx...does not work
 	// http://winprogger.com/?p=26
 	HMODULE psapiDll = LoadLibrary(L"psapi.dll");
 	if (psapiDll != NULL)
@@ -103,7 +103,7 @@ void sm_FreeNTDLLFunctions(HMODULE hNtDll)
 	gNtQueryInformationProcess = NULL;
 
 #ifdef NTPROCESSINFO_LOAD_PSAPI
-	// *** TITLEWAIT MODIFICATION *** ... 
+	// *** TITLEWAIT MODIFICATION *** ...
 	if (psapiDll != NULL)
 		WindowsVerify(L"FreeLibrary", FreeLibrary(psapiDll));
 #endif
@@ -135,14 +135,14 @@ BOOL sm_GetNtProcessInfo(const DWORD dwPID, smPROCESSINFO *ppi)
 	spi.dwPID = dwPID;
 
 	// Attempt to access process
-	HANDLE hProcess = OpenProcess(PROCESS_QUERY_INFORMATION | 
+	HANDLE hProcess = OpenProcess(PROCESS_QUERY_INFORMATION |
 								  PROCESS_VM_READ, FALSE, dwPID);
 	if(hProcess == INVALID_HANDLE_VALUE) {
 		return FALSE;
 	}
 
 #ifdef NTPROCESSINFO_CALL_GETPROCESSIMAGEFILENAME
-	// *** TITLEWAIT MODIFICATION *** ... 
+	// *** TITLEWAIT MODIFICATION *** ...
 	// This was returning "the handle is invalid"... we don't need it anyway.
 	DWORD moduleNameLength;
 	moduleNameLength = getProcessImageFileNameFunction(hProcess, ppi->szImgPath, MAX_PATH);
@@ -151,7 +151,7 @@ BOOL sm_GetNtProcessInfo(const DWORD dwPID, smPROCESSINFO *ppi)
 	return TRUE;
 #endif
 
-	// Try to allocate buffer 
+	// Try to allocate buffer
 	hHeap = GetProcessHeap();
 
 	dwSize = sizeof(smPROCESS_BASIC_INFORMATION);
@@ -180,7 +180,7 @@ BOOL sm_GetNtProcessInfo(const DWORD dwPID, smPROCESSINFO *ppi)
 			HeapFree(hHeap, 0, pbi);
 		pbi = (smPPROCESS_BASIC_INFORMATION)HeapAlloc(hHeap,
 													  HEAP_ZERO_MEMORY,
-                                                      dwSizeNeeded);
+													  dwSizeNeeded);
 		if(!pbi) {
 			CloseHandle(hProcess);
 			return FALSE;
@@ -211,7 +211,7 @@ BOOL sm_GetNtProcessInfo(const DWORD dwPID, smPROCESSINFO *ppi)
 				spi.cBeingDebugged = (BYTE)peb.BeingDebugged;
 
 #ifdef NTPROCESSINFO_ACCESS_PEB_LDR_DATA
-				// *** TITLEWAIT MODIFICATION *** ... 
+				// *** TITLEWAIT MODIFICATION *** ...
 				// Was causing problems and it wasn't even being used for anything
 				// So #ifdef'd it out
 
@@ -251,11 +251,11 @@ BOOL sm_GetNtProcessInfo(const DWORD dwPID, smPROCESSINFO *ppi)
 												 &dwBytesRead))
 							{
 								// if commandline is larger than our variable, truncate
-								if(peb_upp.CommandLine.Length >= sizeof(spi.szCmdLine)) 
+								if(peb_upp.CommandLine.Length >= sizeof(spi.szCmdLine))
 									dwBufferSize = sizeof(spi.szCmdLine) - sizeof(TCHAR);
 								else
 									dwBufferSize = peb_upp.CommandLine.Length;
-							
+
 								// Copy CommandLine to our structure variable
 #if defined(UNICODE) or (_UNICODE)
 								// Since core NT functions operate in Unicode
@@ -290,14 +290,14 @@ BOOL sm_GetNtProcessInfo(const DWORD dwPID, smPROCESSINFO *ppi)
 														peb_upp.ImagePathName.Length);
 						if(pwszBuffer)
 						{
-                            if(ReadProcessMemory(hProcess,
+							if(ReadProcessMemory(hProcess,
 												 peb_upp.ImagePathName.Buffer,
 												 pwszBuffer,
 												 peb_upp.ImagePathName.Length,
 												 &dwBytesRead))
 							{
 								// if ImagePath is larger than our variable, truncate
-								if(peb_upp.ImagePathName.Length >= sizeof(spi.szImgPath)) 
+								if(peb_upp.ImagePathName.Length >= sizeof(spi.szImgPath))
 									dwBufferSize = sizeof(spi.szImgPath) - sizeof(TCHAR);
 								else
 									dwBufferSize = peb_upp.ImagePathName.Length;
@@ -321,7 +321,7 @@ BOOL sm_GetNtProcessInfo(const DWORD dwPID, smPROCESSINFO *ppi)
 						}
 					}	// Read ImagePath in Process Parameters
 				}	// Read Process Parameters
-			}	// Read PEB 
+			}	// Read PEB
 		}	// Check for PEB
 
 		// System process for WinXP and later is PID 4 and we cannot access
@@ -371,7 +371,7 @@ DWORD EnumProcesses2Array(smPROCESSINFO lpi[MAX_PI])
 	if(EnumProcesses((DWORD*)&dwPIDs, dwArraySize, &dwSizeNeeded))
 	{
 			// Get detail info on each process
-            dwPIDCount = dwSizeNeeded / sizeof(DWORD);
+			dwPIDCount = dwSizeNeeded / sizeof(DWORD);
 			for(DWORD p = 0; p < MAX_PI and p < dwPIDCount; p++)
 			{
 				if(sm_GetNtProcessInfo(dwPIDs[p], &lpi[p]))

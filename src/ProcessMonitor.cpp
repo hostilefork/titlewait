@@ -38,54 +38,54 @@ HANDLE processMonThreads[MAX_PATH];
 
 
 DWORD WINAPI ProcessMonitorMain( LPVOID lpParam ) {
-	HANDLE processHandle = lpParam;
-	DWORD processId = GetProcessId(processHandle);
+    HANDLE processHandle = lpParam;
+    DWORD processId = GetProcessId(processHandle);
 
-	debugInfo(L"Adding monitor for process id 0x%x", processId);
+    debugInfo(L"Adding monitor for process id 0x%x", processId);
 
-	if (WaitForSingleObject(processHandle, INFINITE) != WAIT_OBJECT_0) {
-		WindowsVerify(L"WaitForSingleObject", FALSE);
-	}
+    if (WaitForSingleObject(processHandle, INFINITE) != WAIT_OBJECT_0) {
+        WindowsVerify(L"WaitForSingleObject", FALSE);
+    }
 
-	if (WaitForSingleObject(processListMutex, INFINITE) != WAIT_OBJECT_0) {
-		WindowsVerify(L"WaitForSingleObject", FALSE);
-	}
+    if (WaitForSingleObject(processListMutex, INFINITE) != WAIT_OBJECT_0) {
+        WindowsVerify(L"WaitForSingleObject", FALSE);
+    }
 
-	debugInfo(L"Removing monitor for process id 0x%x", processId);
+    debugInfo(L"Removing monitor for process id 0x%x", processId);
 
-	for (int index = 0; index < numProcesses; index++) {
-		if (processIds[index] == processId) {
-			if (index == numProcesses-1)
-				numProcesses--;
-			else {
-				processIds[index] = processIds[numProcesses-1];
-				processMonThreads[index] = processMonThreads[numProcesses-1];
-				numProcesses--;
-			}
+    for (int index = 0; index < numProcesses; index++) {
+        if (processIds[index] == processId) {
+            if (index == numProcesses-1)
+                numProcesses--;
+            else {
+                processIds[index] = processIds[numProcesses-1];
+                processMonThreads[index] = processMonThreads[numProcesses-1];
+                numProcesses--;
+            }
 
-			if (numProcesses == 1) {
-				// down to just the nested guy (another titlewait)...
-				// when he dies, the debugger finally dies...
-				
-				debugInfo(
-					L"Last Child Process Exited, id 0x%x",
-					GetProcessId(processHandle)
-				);
-				WindowsVerify(L"SetEvent", SetEvent(lastProcessExitedEvent));
+            if (numProcesses == 1) {
+                // down to just the nested guy (another titlewait)...
+                // when he dies, the debugger finally dies...
 
-				// We don't have to finish the nested executive gracefully,
-				// though I always like graceful solutions.  Can I figure out
-				// how to signal back to the inherited handles?
-				debugInfo(L"Killing nested executive with ExitProcess.");
-				ExitProcess(1);
-			}
-			WindowsVerify(L"ReleaseMutex", ReleaseMutex(processListMutex));
+                debugInfo(
+                    L"Last Child Process Exited, id 0x%x",
+                    GetProcessId(processHandle)
+                );
+                WindowsVerify(L"SetEvent", SetEvent(lastProcessExitedEvent));
 
-			return 0;
-		}
-	}
+                // We don't have to finish the nested executive gracefully,
+                // though I always like graceful solutions.  Can I figure out
+                // how to signal back to the inherited handles?
+                debugInfo(L"Killing nested executive with ExitProcess.");
+                ExitProcess(1);
+            }
+            WindowsVerify(L"ReleaseMutex", ReleaseMutex(processListMutex));
 
-	WindowsVerify(L"ReleaseMutex", ReleaseMutex(processListMutex));
-	ExitProgramOnWindowsError(L"TitleWait::ProcessMonitorMain::Thread Not Found", 0);
-	return 0;
+            return 0;
+        }
+    }
+
+    WindowsVerify(L"ReleaseMutex", ReleaseMutex(processListMutex));
+    ExitProgramOnWindowsError(L"TitleWait::ProcessMonitorMain::Thread Not Found", 0);
+    return 0;
 }

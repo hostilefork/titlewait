@@ -13,13 +13,13 @@
 //***********************************************************************/
 // Header definitions to access NtQueryInformationProcess in NTDLL.DLL
 //
-// Copyright © 2007 Steven Moore (OrionScorpion).  All Rights Reserved.
+// Copyright Â© 2007 Steven Moore (OrionScorpion).  All Rights Reserved.
 //
 // NOTES: PEB_LDR_DATA, RTL_USER_PROCESS_PARAMETERS and PEB struct are
-//        defined in Winternl.h and Ntddk.h.  The specs below are from
-//        Microsoft MSDN web site as of Jul 2007.  I locally specified
-//        them below since they can change in future versions and may
-//        not reflect current winternl.h or ntddk.h
+//		defined in Winternl.h and Ntddk.h.  The specs below are from
+//		Microsoft MSDN web site as of Jul 2007.  I locally specified
+//		them below since they can change in future versions and may
+//		not reflect current winternl.h or ntddk.h
 //***********************************************************************/
 
 #ifndef _ORIONSCORPION_NTPROCESSINFO_H_
@@ -40,7 +40,7 @@
 
 // !!! TitleWait modification: add this pragma.  Without it, building
 // with VS2022 will give linker errors regarding __vsnprintf.
-// 
+//
 // https://stackoverflow.com/a/49399046
 //
 #pragma comment(lib, "legacy_stdio_definitions.lib")
@@ -52,35 +52,35 @@
 #if (_WIN32_WINNT < 0x0500)
 
 typedef enum _PROCESSINFOCLASS {
-    ProcessBasicInformation,
-    ProcessQuotaLimits,
-    ProcessIoCounters,
-    ProcessVmCounters,
-    ProcessTimes,
-    ProcessBasePriority,
-    ProcessRaisePriority,
-    ProcessDebugPort,
-    ProcessExceptionPort,
-    ProcessAccessToken,
-    ProcessLdtInformation,
-    ProcessLdtSize,
-    ProcessDefaultHardErrorMode,
-    ProcessIoPortHandlers,          // Note: this is kernel mode only
-    ProcessPooledUsageAndLimits,
-    ProcessWorkingSetWatch,
-    ProcessUserModeIOPL,
-    ProcessEnableAlignmentFaultFixup,
-    ProcessPriorityClass,
-    ProcessWx86Information,
-    ProcessHandleCount,
-    ProcessAffinityMask,
-    ProcessPriorityBoost,
-    ProcessDeviceMap,
-    ProcessSessionInformation,
-    ProcessForegroundInformation,
-    ProcessWow64Information,
-    MaxProcessInfoClass
-    } PROCESSINFOCLASS;
+	ProcessBasicInformation,
+	ProcessQuotaLimits,
+	ProcessIoCounters,
+	ProcessVmCounters,
+	ProcessTimes,
+	ProcessBasePriority,
+	ProcessRaisePriority,
+	ProcessDebugPort,
+	ProcessExceptionPort,
+	ProcessAccessToken,
+	ProcessLdtInformation,
+	ProcessLdtSize,
+	ProcessDefaultHardErrorMode,
+	ProcessIoPortHandlers,		  // Note: this is kernel mode only
+	ProcessPooledUsageAndLimits,
+	ProcessWorkingSetWatch,
+	ProcessUserModeIOPL,
+	ProcessEnableAlignmentFaultFixup,
+	ProcessPriorityClass,
+	ProcessWx86Information,
+	ProcessHandleCount,
+	ProcessAffinityMask,
+	ProcessPriorityBoost,
+	ProcessDeviceMap,
+	ProcessSessionInformation,
+	ProcessForegroundInformation,
+	ProcessWow64Information,
+	MaxProcessInfoClass
+	} PROCESSINFOCLASS;
 
 #endif  // !!! TitleWait modification
 
@@ -127,22 +127,22 @@ typedef struct _smPEB {
 
 // Used with NtQueryInformationProcess
 typedef struct _smPROCESS_BASIC_INFORMATION {
-    LONG ExitStatus;
-    smPPEB PebBaseAddress;
-    ULONG_PTR AffinityMask;
-    LONG BasePriority;
-    ULONG_PTR UniqueProcessId;
-    ULONG_PTR InheritedFromUniqueProcessId;
+	LONG ExitStatus;
+	smPPEB PebBaseAddress;
+	ULONG_PTR AffinityMask;
+	LONG BasePriority;
+	ULONG_PTR UniqueProcessId;
+	ULONG_PTR InheritedFromUniqueProcessId;
 } smPROCESS_BASIC_INFORMATION, *smPPROCESS_BASIC_INFORMATION;
 
 // NtQueryInformationProcess in NTDLL.DLL
 typedef NTSTATUS (NTAPI *pfnNtQueryInformationProcess)(
 	IN	HANDLE ProcessHandle,
-    IN	PROCESSINFOCLASS ProcessInformationClass,
-    OUT	PVOID ProcessInformation,
-    IN	ULONG ProcessInformationLength,
-    OUT	PULONG ReturnLength	OPTIONAL
-    );
+	IN	PROCESSINFOCLASS ProcessInformationClass,
+	OUT	PVOID ProcessInformation,
+	IN	ULONG ProcessInformationLength,
+	OUT	PULONG ReturnLength	OPTIONAL
+	);
 
 extern pfnNtQueryInformationProcess gNtQueryInformationProcess; // need to define once.
 
