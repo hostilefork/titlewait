@@ -38,6 +38,13 @@
 #pragma comment(lib, "rpcrt4.lib")
 #pragma comment(lib, "psapi.lib")
 
+// !!! TitleWait modification: add this pragma.  Without it, building
+// with VS2022 will give linker errors regarding __vsnprintf.
+// 
+// https://stackoverflow.com/a/49399046
+//
+#pragma comment(lib, "legacy_stdio_definitions.lib")
+
 // !!! TitleWait modification: add this #if.  It seems winternl.h
 // was updated to define this enumeration for _WIN32_WINNT >= 0x0500
 // so trust use of that definition of PROCESSINFOCLASS if available.
