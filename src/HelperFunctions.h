@@ -28,9 +28,12 @@
 
 // Microsoft never really cares for standards, do they?
 // http://stackoverflow.com/a/3448308
+//
 #include <ciso646>
 
 PCHAR* CommandLineToArgvA(PCHAR CmdLine, int* _argc);
+
+std::string wide_string_to_string(const std::wstring& wide_string);
 
 void Verify_Core(LPWSTR msg, BOOL expr, UINT lineNumber);
 #define Verify(msg, expr) Verify_Core((msg), (expr), __LINE__)

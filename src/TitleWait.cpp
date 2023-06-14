@@ -155,20 +155,18 @@ TitleWait::MainReturn TitleWait::doMain()
         std::stringstream commandLine;
         commandLine << "cmd /c" << ' ' << '"' << ' ';
 
-        // We have unicode strings, but alas, we need ascii to call system()
-        // http://stackoverflow.com/a/12097772
-        // Use this until a better solution comes along...
+        // We have unicode strings, but system() doesn't take wide strings
 
-        std::string programAscii (config->program.begin(), config->program.end());
+        std::string programUtf8 = wide_string_to_string(config->program);
 
         commandLine << '"';
-        commandLine << programAscii;
+        commandLine << programUtf8;
         commandLine << '"';
         commandLine << ' ';
 
-        std::string argsAscii (config->args.begin(), config->args.end());
+        std::string argsUtf8 = wide_string_to_string(config->args);
 
-        commandLine << argsAscii;
+        commandLine << argsUtf8;
 
         commandLine << ' ';
         commandLine << '"';
