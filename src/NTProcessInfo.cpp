@@ -115,7 +115,13 @@ BOOL sm_GetNtProcessInfo(const DWORD dwPID, smPROCESSINFO *ppi)
 	BOOL  bReturnStatus						= TRUE;
 	DWORD dwSize							= 0;
 	DWORD dwSizeNeeded						= 0;
-	DWORD dwBytesRead						= 0;
+
+	// !!! TitleWait modification DWORD => size_t to be able to be built
+	// as 64-bit, as the 32-bit TitleWait can't launch 64-bit programs without
+	// getting the error "System cannot execute the specified program."
+	//
+	size_t dwBytesRead						= 0;
+
 	DWORD dwBufferSize						= 0;
 	HANDLE hHeap							= 0;
 	WCHAR *pwszBuffer						= NULL;
