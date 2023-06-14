@@ -72,6 +72,7 @@ std::wstring TitleWaitConfig::optionDescriptions[OptionMax] = {
 
 // Using what boost tolerates for boolean true and false...
 // http://stackoverflow.com/questions/15629771/
+//
 bool GetBoolOption(
     std::wstring const & optionName,
     std::wstring const & value,
@@ -119,6 +120,7 @@ bool GetStringOption(
 {
     // Can we just trust that quotes have been handled properly?
     // It seems like Windows lets us assume so.  :-/
+    //
     if (true) {
         result = value;
         return true;
@@ -137,7 +139,6 @@ bool TitleWaitConfig::ProcessCommandLineArgs(
     help = (numArgs <= 1);
 
     for (int argIndex = 1; argIndex < numArgs; argIndex++) {
-
         bool optionMatched = false;
         bool validValue = true;
 
@@ -147,11 +148,11 @@ bool TitleWaitConfig::ProcessCommandLineArgs(
 
             std::wstringstream decoratedOption;
             decoratedOption << L"--" << optionNames[optInt];
-            if (option != HelpOption) {
+            if (option != HelpOption)
                 decoratedOption << "=";
-            }
 
             // We test for the zero position; very beginning of option
+            //
             if (arg.find(decoratedOption.str().c_str()) != 0) {
                 continue;
             }
@@ -160,16 +161,18 @@ bool TitleWaitConfig::ProcessCommandLineArgs(
 
             // Substring from past the equals sign to end of string
             // This means we may get quotes around string arguments
+            //
             std::wstring value (
                 arg.substr(decoratedOption.str().length(), std::string::npos)
             );
+
             switch (option) {
-            case HelpOption:
+              case HelpOption:
                 help = true;
                 validValue = true;
                 break;
 
-            case RegexOption:
+              case RegexOption:
                 validValue = GetStringOption(
                     optionNames[optInt],
                     value,
@@ -177,7 +180,7 @@ bool TitleWaitConfig::ProcessCommandLineArgs(
                 );
                 break;
 
-            case SearchAllOption:
+              case SearchAllOption:
                 validValue = GetBoolOption(
                     optionNames[optInt],
                     value,
@@ -185,7 +188,7 @@ bool TitleWaitConfig::ProcessCommandLineArgs(
                 );
                 break;
 
-            case VerboseOption:
+              case VerboseOption:
                 validValue = GetBoolOption(
                     optionNames[optInt],
                     value,
@@ -193,7 +196,7 @@ bool TitleWaitConfig::ProcessCommandLineArgs(
                 );
                 break;
 
-            case FrequencyOption:
+              case FrequencyOption:
                 validValue = GetDwordOption(
                     optionNames[optInt],
                     value,
@@ -201,7 +204,7 @@ bool TitleWaitConfig::ProcessCommandLineArgs(
                 );
                 break;
 
-            case TimeoutOption:
+              case TimeoutOption:
                 validValue = GetDwordOption(
                     optionNames[optInt],
                     value,
@@ -209,7 +212,7 @@ bool TitleWaitConfig::ProcessCommandLineArgs(
                 );
                 break;
 
-            case CrashSnapshotOption:
+              case CrashSnapshotOption:
                 validValue = GetStringOption(
                     optionNames[optInt],
                     value,
@@ -217,7 +220,7 @@ bool TitleWaitConfig::ProcessCommandLineArgs(
                 );
                 break;
 
-            case RegexSnapshotOption:
+              case RegexSnapshotOption:
                 validValue = GetStringOption(
                     optionNames[optInt],
                     value,
@@ -225,7 +228,7 @@ bool TitleWaitConfig::ProcessCommandLineArgs(
                 );
                 break;
 
-            case CloseOnMatchOption:
+              case CloseOnMatchOption:
                 validValue = GetBoolOption(
                     optionNames[optInt],
                     value,
@@ -233,7 +236,7 @@ bool TitleWaitConfig::ProcessCommandLineArgs(
                 );
                 break;
 
-            case TimeoutSnapshotOption:
+              case TimeoutSnapshotOption:
                 validValue = GetStringOption(
                     optionNames[optInt],
                     value,
@@ -241,7 +244,7 @@ bool TitleWaitConfig::ProcessCommandLineArgs(
                 );
                 break;
 
-            case ProgramOption:
+              case ProgramOption:
                 validValue = GetStringOption(
                     optionNames[optInt],
                     value,
@@ -249,7 +252,7 @@ bool TitleWaitConfig::ProcessCommandLineArgs(
                 );
                 break;
 
-            case ArgsOption:
+              case ArgsOption:
                 validValue = GetStringOption(
                     optionNames[optInt],
                     value,
@@ -257,7 +260,7 @@ bool TitleWaitConfig::ProcessCommandLineArgs(
                 );
                 break;
 
-            case DeferOption:
+              case DeferOption:
                 validValue = GetBoolOption(
                     optionNames[optInt],
                     value,
@@ -265,7 +268,7 @@ bool TitleWaitConfig::ProcessCommandLineArgs(
                 );
                 break;
 
-            case XOption:
+              case XOption:
                 validValue = GetDwordOption(
                     optionNames[optInt],
                     value,
@@ -273,7 +276,7 @@ bool TitleWaitConfig::ProcessCommandLineArgs(
                 );
                 break;
 
-            case YOption:
+              case YOption:
                 validValue = GetDwordOption(
                     optionNames[optInt],
                     value,
@@ -281,7 +284,7 @@ bool TitleWaitConfig::ProcessCommandLineArgs(
                 );
                 break;
 
-            case WidthOption:
+              case WidthOption:
                 validValue = GetDwordOption(
                     optionNames[optInt],
                     value,
@@ -289,7 +292,7 @@ bool TitleWaitConfig::ProcessCommandLineArgs(
                 );
                 break;
 
-            case HeightOption:
+              case HeightOption:
                 validValue = GetDwordOption(
                     optionNames[optInt],
                     value,
@@ -297,19 +300,18 @@ bool TitleWaitConfig::ProcessCommandLineArgs(
                 );
                 break;
 
-            case ShutdownEventOption: {
+              case ShutdownEventOption: {
                 void* shutdownEventPtr;
                 validValue = GetPointerOption(
                     optionNames[optInt],
                     value,
                     /*&*/ shutdownEventPtr
                 );
-                shutdownEvent =
-                    static_cast<HANDLE>(shutdownEventPtr);
+                shutdownEvent = static_cast<HANDLE>(shutdownEventPtr);
                 break;
             }
 
-            default:
+              default:
                 Verify(L"Unreachable code", FALSE);
             }
 
@@ -355,6 +357,7 @@ std::wstring TitleWaitConfig::RegenerateCommandLine() const
         commandLine << L' ';
 
         // must escape any single quotes with \"
+        //
         for (int index = 0; index < wcslen(programArgs[argIndex]); index++) {
             if (programArgs[argIndex][index] == L'"') {
                 commandLine << L'\\';

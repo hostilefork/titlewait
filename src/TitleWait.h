@@ -29,7 +29,7 @@ extern TitleWaitConfig const * config;
 
 class TitleWait
 {
-public:
+  public:
     //
     // Possible exit codes for the program.  Callers may depend on these
     // numbers; so keep them invariant, and retire or add numbers as
@@ -56,7 +56,7 @@ public:
 
     static std::wstring returnDescriptions[ReturnMax];
 
-public:
+  public:
     MainReturn doMain();
 };
 

@@ -147,7 +147,7 @@ PBITMAPINFO CreateBitmapInfoStruct(HWND hwnd, HBITMAP hBmp)
 //
 void CreateBMPFile(
     HWND hwnd, WCHAR const * pszFile, PBITMAPINFO pbi, HBITMAP hBMP, HDC hDC
-) {
+){
     HANDLE hf;                 // file handle
     BITMAPFILEHEADER hdr;       // bitmap file-header
     PBITMAPINFOHEADER pbih;     // bitmap info-header
@@ -237,5 +237,6 @@ BOOL TakeScreenshotToFile(WCHAR const * pszFile) {
     LocalFree(pbitmapinfo);
 
     // For now, assume if any of the above failed it would terminate program
+
     return TRUE;
 }

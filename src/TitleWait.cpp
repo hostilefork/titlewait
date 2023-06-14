@@ -38,6 +38,7 @@
 // Nasty global variable, but Windows isn't particularly good about making
 // it easy to pass 64-bit compatible pointers around in callbacks, ever since
 // the trick of poking a 32-bit value into GWL_USER went away...
+//
 TitleWaitConfig const * config = NULL;
 
 
@@ -173,6 +174,7 @@ TitleWait::MainReturn TitleWait::doMain()
         commandLine << '"';
 
         // http://www.devx.com/tips/Tip/15144
+        //
         // The system() function (declared in <cstdlib>) launches another
         // program from the current program.  As opposed to what most
         // users think, it doesn't return the exit code of the launched
@@ -201,49 +203,51 @@ TitleWait::MainReturn TitleWait::doMain()
 
         HANDLE neverEvent = CreateEvent(
             NULL,  // default security attributes
-            TRUE, // manual-reset event
-            FALSE, // initial state is nonsignaled
-            NULL // object name
-            );
+            TRUE,  // manual-reset event
+            FALSE,  // initial state is nonsignaled
+            NULL  // object name
+        );
 
         debugInfo(L"Waiting indefinitely, must kill this thread");
         WindowsVerify(L"WaitForSingleObject",
             WaitForSingleObject(neverEvent, INFINITE) == WAIT_OBJECT_0
         );
 
-        // Exit code of second process started is what we detect in parent...
+        // Exitcode of second process started is what we detect in parent...
+
         return ClosedReturn;
     }
 
     // Create the thread to begin execution on its own.
+
     DWORD titleMonitorThreadId;
     HANDLE titleMonitorThread = CreateThread(
-        NULL, // default security attributes
-        0, // use default stack size
-        TitleMonitorThreadProc, // thread function name
-        GetCommandLineW(), // argument to thread function
-        0, // use default creation flags
+        NULL,  // default security attributes
+        0,  // use default stack size
+        TitleMonitorThreadProc,  // thread function name
+        GetCommandLineW(),  // argument to thread function
+        0,  // use default creation flags
         &titleMonitorThreadId
     );
     if (titleMonitorThread == NULL)
         WindowsVerify(L"CreateThread", FALSE);
 
-    if (!config->program.empty()) {
+    if (not config->program.empty()) {
 
         // DEBUG LAUNCHER
         //
         // The outer process which spawns the nested executive
 
         processListMutex = CreateMutex(
-            NULL, // default security attributes
-            FALSE, // initially not owned
-            NULL // unnamed mutex
+            NULL,  // default security attributes
+            FALSE,  // initially not owned
+            NULL  // unnamed mutex
         );
 
         lastProcessExitedEvent = CreateEvent(
-            NULL, // default security attributes
-            TRUE, // manual-reset event
-            FALSE, // initial state is nonsignaled
+            NULL,  // default security attributes
+            TRUE,  // manual-reset event
+            FALSE,  // initial state is nonsignaled
             NULL  // object name
         );
 
@@ -252,6 +256,7 @@ TitleWait::MainReturn TitleWait::doMain()
         // Passing to the constructor seems to not put the insertion position
         // at end.  Some documents suggest you could with ios_base::ate, but
         // the wording is dodgy about being "implementation dependent".  Eh?
+        //
         commandLine << config->RegenerateCommandLine();
 
         // We'll be running the same command again, only add shutdownevent
@@ -264,26 +269,28 @@ TitleWait::MainReturn TitleWait::doMain()
             static_cast<void*>(lastProcessExitedEvent);
 
         // see: http://www.catch22.net/tuts/undoc01.asp
+        //
         STARTUPINFO startupInfo;
         ZeroMemory(&startupInfo, sizeof(STARTUPINFO));
         startupInfo.cb = sizeof(STARTUPINFO);
 
         startupInfo.wShowWindow = config->shouldMoveWindow() ? SW_HIDE : SW_SHOW;
 
-#ifdef CREATE_PROCESS_WITH_DESKTOP
+      #ifdef CREATE_PROCESS_WITH_DESKTOP
+        //
         // Wondered if NULL for lpDesktop was causing problems in the
         // startupInfo.  Turned out to not be the problem.  Might want to
         // give user power to specify which desktop though
-
+        //
         HDESK desktopForThread = GetThreadDesktop(GetCurrentThreadId());
         DWORD desktopNameLength;
-        if (!GetUserObjectInformation(
+        if (not GetUserObjectInformation(
             desktopForThread,
             UOI_NAME,
             NULL,
             0,
             &desktopNameLength
-        )) {
+        )){
             DWORD lastError = GetLastError();
             // we expect the error for passing in a buffer that's too small
             if (lastError != 0x7a) {
@@ -293,8 +300,8 @@ TitleWait::MainReturn TitleWait::doMain()
             }
         }
         LPWSTR desktopName = (LPWSTR)VirtualAlloc(
-            (LPVOID) NULL,
-            (DWORD) (desktopNameLength + 1),
+            (LPVOID)NULL,
+            (DWORD)(desktopNameLength + 1),
             MEM_COMMIT,
             PAGE_READWRITE
         );
@@ -312,11 +319,13 @@ TitleWait::MainReturn TitleWait::doMain()
         /* (...process create...) */
 
         VirtualFree(desktopName, 0, MEM_RELEASE);
-#endif
+      #endif
 
-#ifdef CREATE_PROCESS_AS_USER
+      #ifdef CREATE_PROCESS_AS_USER
+        //
         // Tried CreateProcessAsUser and link with advapi32.lib.
         // That didn't help launch issue one bit!
+        //
         HANDLE tokenHandle;
         WindowsVerify(L"OpenProcessToken",
             OpenProcessToken(
@@ -326,29 +335,31 @@ TitleWait::MainReturn TitleWait::doMain()
             )
         );
         /*if (CreateProcessAsUser(tokenHandle, ... */
-#endif
+      #endif
 
-#ifdef USE_STARTUPINFO_FOR_WINDOW_POSITION
+      #ifdef USE_STARTUPINFO_FOR_WINDOW_POSITION
+        //
         // You would think this would work, as it's been documented to.
         // But it does not work.
         //
         // Causes the process to freeze up, you have to then run ResumeThread
         // on it... even then, the window will pick its own coordinates
+        //
         startupInfo.dwX = config->x;
         startupInfo.dwY = config->y;
         startupInfo.dwXSize = config->width;
         startupInfo.dwYSize = config->height;
 
-            /* (...process create...) */
-            }
-#endif
+        /* (...process create...) */
+      #endif
 
         startupInfo.hStdInput = stdin;
         startupInfo.hStdOutput = stdout;
         startupInfo.hStdError = stderr;
 
-        // argument to thread function
-        // we shouldn't read from this until thread is terminated!!
+        // Argument to thread function
+        // We shouldn't read from this until thread is terminated!!
+        //
         DebugArgs debugArgs;
         debugArgs.startupInfo = &startupInfo;
         debugArgs.commandLine = commandLine.str();
@@ -369,18 +380,18 @@ TitleWait::MainReturn TitleWait::doMain()
 
         // Create the debugger thread.  Unfortunately we can't put message
         // boxes and such up in a debug thread without sometimes hanging the UI
+        //
         DWORD debugThreadId;
         HANDLE debugThread = CreateThread(
-            NULL, // default security attributes
-            0, // use default stack size
-            DebugLoopMain, // thread function name
+            NULL,  // default security attributes
+            0,  // use default stack size
+            DebugLoopMain,  // thread function name
             &debugArgs,
-            0, // use default creation flags
+            0,  // use default creation flags
             &debugThreadId
         );
-        if (debugThread == NULL) {
+        if (debugThread == NULL)
             WindowsVerify(L"CreateThread", FALSE);
-        }
 
         // Dirt simple GUI thread right now, we wait for a signal or thread
         // termination...then read ret
@@ -389,10 +400,11 @@ TitleWait::MainReturn TitleWait::doMain()
         BOOL debugLoopRunning = TRUE;
         while (debugLoopRunning) {
             switch(WaitForMultipleObjects(2, waitOnObjects, FALSE, INFINITE)) {
-            case WAIT_OBJECT_0:
+              case WAIT_OBJECT_0:
                 debugLoopRunning = FALSE;
                 break;
-            case WAIT_OBJECT_0+1: {
+
+              case WAIT_OBJECT_0 + 1: {
                 WindowsVerify(L"ResetEvent",
                     ResetEvent(debugArgs.deferEvent)
                 );
@@ -417,10 +429,9 @@ TitleWait::MainReturn TitleWait::doMain()
                         SetEvent(debugArgs.retryEvent)
                     );
                 }
-                break;
-            }
+                break; }
 
-            default:
+              default:
                 WindowsVerify(L"WaitForMultipleObjects", FALSE);
             }
         }
@@ -443,27 +454,30 @@ TitleWait::MainReturn TitleWait::doMain()
         // as any timeout period remains, we will wait.
 
         // Assume user will start process to make the title on their own
+
         switch(WaitForSingleObject(titleMonitorThread, msecLeft)) {
-            case WAIT_OBJECT_0:
-                // success, thread died of its own accord...
-                ret = SuccessReturn;
-                break;
-            case WAIT_TIMEOUT:
-                if (not config->timeoutSnapshot.empty()) {
-                    Verify(L"Screen Capture Failed",
-                        TakeScreenshotToFile(config->timeoutSnapshot.c_str())
-                    );
-                }
-                ret = TimeoutReturn;
-                break;
-            default:
-                WindowsVerify(L"WaitForSingleObject", FALSE);
-                ret = InternalErrorReturn; // Never executed
+          case WAIT_OBJECT_0:
+            ret = SuccessReturn;  // success, thread died of its own accord...
+            break;
+
+          case WAIT_TIMEOUT:
+            if (not config->timeoutSnapshot.empty()) {
+                Verify(L"Screen Capture Failed",
+                    TakeScreenshotToFile(config->timeoutSnapshot.c_str())
+                );
+            }
+            ret = TimeoutReturn;
+            break;
+
+          default:
+            WindowsVerify(L"WaitForSingleObject", FALSE);
+            ret = InternalErrorReturn;  // Never executed
         }
     }
 
     // Cleanly tie up the monitor thread.
     // It may be in a finished state, thus waiting on it returns immediately
+    //
     if (WaitForSingleObject(titleMonitorThread, 0) != WAIT_OBJECT_0) {
         WindowsVerify(L"PostThreadMessage",
             PostThreadMessage(titleMonitorThreadId, WM_QUIT, 0, 0)

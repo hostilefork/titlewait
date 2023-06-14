@@ -29,10 +29,12 @@ struct DebugArgs {
     std::wstring commandLine;
     STARTUPINFO* startupInfo;
     LPDWORD msecLeft;
-    HANDLE deferEvent; // we tell GUI when we notice another process
+    HANDLE deferEvent;  // we tell GUI when we notice another process
 
     // GUI thread tells us when they said Retry.  We must poll to get this.
+    //
     HANDLE retryEvent;
+
     std::wstring exeImageName;
 };
 

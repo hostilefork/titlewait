@@ -34,6 +34,7 @@ DWORD processIds[MAX_PATH];
 // wait INFINITE on spawned processes with a spawned thread...
 //
 //     http://www.codeproject.com/KB/threads/asyncprocnotify.aspx
+//
 HANDLE processMonThreads[MAX_PATH];
 
 
@@ -43,30 +44,29 @@ DWORD WINAPI ProcessMonitorMain( LPVOID lpParam ) {
 
     debugInfo(L"Adding monitor for process id 0x%x", processId);
 
-    if (WaitForSingleObject(processHandle, INFINITE) != WAIT_OBJECT_0) {
+    if (WaitForSingleObject(processHandle, INFINITE) != WAIT_OBJECT_0)
         WindowsVerify(L"WaitForSingleObject", FALSE);
-    }
 
-    if (WaitForSingleObject(processListMutex, INFINITE) != WAIT_OBJECT_0) {
+    if (WaitForSingleObject(processListMutex, INFINITE) != WAIT_OBJECT_0)
         WindowsVerify(L"WaitForSingleObject", FALSE);
-    }
 
     debugInfo(L"Removing monitor for process id 0x%x", processId);
 
     for (int index = 0; index < numProcesses; index++) {
         if (processIds[index] == processId) {
-            if (index == numProcesses-1)
-                numProcesses--;
+            if (index == numProcesses - 1)
+                --numProcesses;
             else {
-                processIds[index] = processIds[numProcesses-1];
-                processMonThreads[index] = processMonThreads[numProcesses-1];
-                numProcesses--;
+                processIds[index] = processIds[numProcesses - 1];
+                processMonThreads[index] = processMonThreads[numProcesses - 1];
+                --numProcesses;
             }
 
             if (numProcesses == 1) {
-                // down to just the nested guy (another titlewait)...
-                // when he dies, the debugger finally dies...
-
+                //
+                // Down to just the nested guy (another titlewait)...
+                // When he dies, the debugger finally dies...
+                //
                 debugInfo(
                     L"Last Child Process Exited, id 0x%x",
                     GetProcessId(processHandle)
@@ -76,6 +76,7 @@ DWORD WINAPI ProcessMonitorMain( LPVOID lpParam ) {
                 // We don't have to finish the nested executive gracefully,
                 // though I always like graceful solutions.  Can I figure out
                 // how to signal back to the inherited handles?
+                //
                 debugInfo(L"Killing nested executive with ExitProcess.");
                 ExitProcess(1);
             }

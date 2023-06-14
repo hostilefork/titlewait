@@ -29,12 +29,11 @@
 // Define wmain instead of _tmain, project defines _UNICODE
 //     http://stackoverflow.com/a/895894
 //
-int wmain(int numArgs, WCHAR * programArgs[])
+int wmain(int numArgs, WCHAR* programArgs[])
 {
     TitleWaitConfig configWritable;
-    if (!configWritable.ProcessCommandLineArgs(numArgs, programArgs)) {
+    if (not configWritable.ProcessCommandLineArgs(numArgs, programArgs))
         return TitleWait::BadArgumentsReturn;
-    }
 
     config = &configWritable;
 
